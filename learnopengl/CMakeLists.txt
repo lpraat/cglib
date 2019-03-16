@@ -8,5 +8,9 @@ find_package(OpenGL REQUIRED)
 
 include_directories(private public ${OPENGL_INCLUDE_DIRS})
 
-add_executable(learnopengl main.cpp)
+add_executable(
+    learnopengl main.cpp
+    private/glad/glad.c
+)
+
 target_link_libraries(learnopengl ${OPENGL_LIBRARIES} glfw)
