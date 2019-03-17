@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 int main() {
 
     // Initialize glfw
@@ -34,8 +36,31 @@ int main() {
         return -1;
     }
 
+    // Tell opengl the size of the rendering window
+    glViewport(0, 0, 800, 600);
 
+    // Set callback for resizing
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    while (!glfwWindowShouldClose(window)) {
+
+        // swap the color buffer(large buffer that contains color values for each pixel in the GLFW's window)
+        // that that has been used to draw in during this iteration and show it to output screen
+        glfwSwapBuffers(window);
+
+        // checks if any events are triggered(like keyboard input, mouse movement events..)
+        // update window state and calls the corresponding callbacks
+        glfwPollEvents();
+    }
+
+    // clear resources
+    glfwTerminate();
 
     return 0;
 
+}
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
