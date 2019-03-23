@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cmath>
+#include <iostream>
 
 // TODO use core_types
 
@@ -117,4 +118,41 @@ matrix<float> shearZMatrix(float hx, float hy) {
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     };
+}
+
+
+// TODO temporary, assume matrix have correct dimensions
+matrix<float> dotProduct(const matrix<float>& m1, const matrix<float>& m2) {
+
+    if (m1[0].size() != m2.size()) {
+        throw std::runtime_error("Mismatch in matrix dimensions");
+    }
+
+    matrix<float> result(m1.size(), std::vector<float>(m2[0].size()));
+    float sum;
+
+    for (int i = 0; i < m1.size(); i++) {
+        for (int j = 0; j < m2[0].size(); j++) {
+
+            sum = 0;
+            for (int k = 0; k < m2.size(); k++) {
+                sum += m1[i][k] * m2[k][j];
+            }
+            result[i][j] = sum;
+        }
+    }
+
+    return result;
+}
+
+matrix<float> compose(std::vector<matrix<float>>& matrices) {
+    matrix<float> result;
+
+    result = dotProduct(matrices[0], matrices[1]);
+
+    for (int i = 2; i < matrices.size(); i++) {
+        result = dotProduct(result, matrices[i]);
+    }
+
+    return result;
 }
