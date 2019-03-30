@@ -277,17 +277,12 @@ std::vector<std::pair<float32, float32>> extractEulerAngles(matrix<float32> rotM
 // Extracting Euler Angles from a Rotation Matrix, Mike Day, Insomniac Games
 // https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
 std::vector<float32> extractEulerAnglesAlt(matrix<float32> rotMatrix) {
-    float32 theta1 = std::atan2(rotMatrix[1][2], rotMatrix[2][2]);
+    float32 theta1 = std::atan2(rotMatrix[2][1], rotMatrix[2][2]);
     float32 s1 = std::sin(theta1);
     float32 c1 = std::cos(theta1);
-    float32 c2 = std::sqrt(std::pow(rotMatrix[0][0], 2) + std::pow(rotMatrix[0][1], 2));
-    float32 theta2 = std::atan2(-rotMatrix[0][2], c2);
-    float32 theta3 = std::atan2(s1*rotMatrix[2][0] - c1*rotMatrix[1][0], c1*rotMatrix[1][1] - s1*rotMatrix[2][1]);
+    float32 c2 = std::sqrt(std::pow(rotMatrix[0][0], 2) + std::pow(rotMatrix[1][0], 2));
+    float32 theta2 = std::atan2(-rotMatrix[2][0], c2);
+    float32 theta3 = std::atan2(s1*rotMatrix[0][2] - c1*rotMatrix[0][1], c1*rotMatrix[1][1] - s1*rotMatrix[1][2]);
 
-    // TODO change euler struct
-    return std::vector {
-        static_cast<float32>(theta1),
-        static_cast<float32>(theta2),
-        static_cast<float32>(theta3)
-    };
+    return std::vector {theta1, theta2, theta3};
 }
