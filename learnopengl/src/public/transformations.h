@@ -4,14 +4,13 @@
 #include <cmath>
 #include <iostream>
 #include "core_types.h"
-
-// TODO use core_types
-
-constexpr double pi() { return std::atan(1)*4; }
+#include "constants.h"
 
 template <typename T>
 using matrix = std::vector<std::vector<T>>;
 
+
+// Forward
 matrix<float32> compose(std::vector<matrix<float32>>& matrices);
 matrix<float32> dotProduct(const matrix<float32>& m1, const matrix<float32>& m2);
 
@@ -192,27 +191,42 @@ matrix<float32> perspectiveProjection(float32 fov, float32 n, float32 f, float32
     };
 }
 
-
-// TODO temporary, assume matrix have correct dimensions
 matrix<float32> dotProduct(const matrix<float32>& m1, const matrix<float32>& m2) {
-    if (m1[0].size() != m2.size()) {
-        throw std::runtime_error("Mismatch in matrix dimensions");
-    }
-
-    matrix<float32> result(m1.size(), std::vector<float32>(m2[0].size()));
-    float32 sum;
-
-    for (int i = 0; i < m1.size(); i++) {
-        for (int j = 0; j < m2[0].size(); j++) {
-            sum = 0;
-            for (int k = 0; k < m2.size(); k++) {
-                sum += m1[i][k] * m2[k][j];
-            }
-            result[i][j] = sum;
+    return {
+        {
+            m1[0][0]*m2[0][0] + m1[0][1]*m2[1][0] + m1[0][2]*m2[2][0] + m1[0][3]*m2[3][0],
+            m1[0][0]*m2[0][1] + m1[0][1]*m2[1][1] + m1[0][2]*m2[2][1] + m1[0][3]*m2[3][1],
+            m1[0][0]*m2[0][2] + m1[0][1]*m2[1][2] + m1[0][2]*m2[2][2] + m1[0][3]*m2[3][2],
+            m1[0][0]*m2[0][3] + m1[0][1]*m2[1][3] + m1[0][2]*m2[2][3] + m1[0][3]*m2[3][3]
+        },
+        {
+            m1[1][0]*m2[0][0] + m1[1][1]*m2[1][0] + m1[1][2]*m2[2][0] + m1[1][3]*m2[3][0],
+            m1[1][0]*m2[0][1] + m1[1][1]*m2[1][1] + m1[1][2]*m2[2][1] + m1[1][3]*m2[3][1],
+            m1[1][0]*m2[0][2] + m1[1][1]*m2[1][2] + m1[1][2]*m2[2][2] + m1[1][3]*m2[3][2],
+            m1[1][0]*m2[0][3] + m1[1][1]*m2[1][3] + m1[1][2]*m2[2][3] + m1[1][3]*m2[3][3]
+        },
+        {
+            m1[2][0]*m2[0][0] + m1[2][1]*m2[1][0] + m1[2][2]*m2[2][0] + m1[2][3]*m2[3][0],
+            m1[2][0]*m2[0][1] + m1[2][1]*m2[1][1] + m1[2][2]*m2[2][1] + m1[2][3]*m2[3][1],
+            m1[2][0]*m2[0][2] + m1[2][1]*m2[1][2] + m1[2][2]*m2[2][2] + m1[2][3]*m2[3][2],
+            m1[2][0]*m2[0][3] + m1[2][1]*m2[1][3] + m1[2][2]*m2[2][3] + m1[2][3]*m2[3][3]
+        },
+        {
+            m1[3][0]*m2[0][0] + m1[3][1]*m2[1][0] + m1[3][2]*m2[2][0] + m1[3][3]*m2[3][0],
+            m1[3][0]*m2[0][1] + m1[3][1]*m2[1][1] + m1[3][2]*m2[2][1] + m1[3][3]*m2[3][1],
+            m1[3][0]*m2[0][2] + m1[3][1]*m2[1][2] + m1[3][2]*m2[2][2] + m1[3][3]*m2[3][2],
+            m1[3][0]*m2[0][3] + m1[3][1]*m2[1][3] + m1[3][2]*m2[2][3] + m1[3][3]*m2[3][3]
         }
-    }
+    };
+}
 
-    return result;
+std::vector<float32> dotProduct(const matrix<float32>& m1, const std::vector<float32>& v) {
+    return {
+            m1[0][0]*v[0] + m1[0][1]*v[1] + m1[0][2]*v[2] + m1[0][3]*v[3],
+            m1[1][0]*v[0] + m1[1][1]*v[1] + m1[1][2]*v[2] + m1[1][3]*v[3],
+            m1[2][0]*v[0] + m1[2][1]*v[1] + m1[2][2]*v[2] + m1[2][3]*v[3],
+            m1[3][0]*v[0] + m1[3][1]*v[1] + m1[3][2]*v[2] + m1[3][3]*v[3]
+    };
 }
 
 matrix<float32> compose(std::vector<matrix<float32>>& matrices) {
@@ -220,9 +234,60 @@ matrix<float32> compose(std::vector<matrix<float32>>& matrices) {
 
     result = dotProduct(matrices[0], matrices[1]);
 
-    for (int i = 2; i < matrices.size(); i++) {
+    for (uint32 i = 2; i < matrices.size(); i++) {
         result = dotProduct(result, matrices[i]);
     }
 
     return result;
+}
+
+// Computing Euler angles from a rotation matrix - Gregory G. Slabaugh
+std::vector<std::pair<float32, float32>> extractEulerAngles(matrix<float32> rotMatrix) {
+    float32 theta1, theta2;
+    float32 psi1, psi2;
+    float32 fi1, fi2;
+
+    if (rotMatrix[2][0] != -1 && rotMatrix[2][0] != 1) {
+        theta1 = -std::asin(rotMatrix[2][0]);
+        theta2 = pi() - theta1;
+
+        float32 cosTheta1 = std::cos(theta1);
+        float32 cosTheta2 = std::cos(theta2);
+
+        psi1 = std::atan2(rotMatrix[2][1] / cosTheta1, rotMatrix[2][2] / cosTheta1);
+        psi2 = std::atan2(rotMatrix[2][1] / cosTheta2, rotMatrix[2][2] / cosTheta2);
+
+        fi1 = std::atan2(rotMatrix[1][0] / cosTheta1, rotMatrix[0][0] / cosTheta1);
+        fi2 = std::atan2(rotMatrix[1][0] / cosTheta2, rotMatrix[0][0] / cosTheta2);
+    } else {
+        fi1 = fi2 = 0;
+
+        if (rotMatrix[2][0] != -1) {
+            theta1 = theta2 = pi() / 2;
+            psi1 = psi2 = atan2(rotMatrix[0][1], rotMatrix[0][2]);
+        } else {
+            theta1 = theta2 = - pi() / 2;
+            psi1 = psi2 = atan2(- rotMatrix[0][1], - rotMatrix[0][2]);
+        }
+    }
+
+    return std::vector {std::make_pair(theta1, theta2), std::make_pair(psi1, psi2), std::make_pair(fi1, fi2)};
+}
+
+// Extracting Euler Angles from a Rotation Matrix, Mike Day, Insomniac Games
+// https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
+std::vector<float32> extractEulerAnglesAlt(matrix<float32> rotMatrix) {
+    float32 theta1 = std::atan2(rotMatrix[1][2], rotMatrix[2][2]);
+    float32 s1 = std::sin(theta1);
+    float32 c1 = std::cos(theta1);
+    float32 c2 = std::sqrt(std::pow(rotMatrix[0][0], 2) + std::pow(rotMatrix[0][1], 2));
+    float32 theta2 = std::atan2(-rotMatrix[0][2], c2);
+    float32 theta3 = std::atan2(s1*rotMatrix[2][0] - c1*rotMatrix[1][0], c1*rotMatrix[1][1] - s1*rotMatrix[2][1]);
+
+    // TODO change euler struct
+    return std::vector {
+        static_cast<float32>(theta1),
+        static_cast<float32>(theta2),
+        static_cast<float32>(theta3)
+    };
 }
