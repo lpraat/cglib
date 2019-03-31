@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "core_types.h"
+#include <cmath>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -12,18 +13,23 @@ const uint32 HEIGHT = 600;
 
 const char *vertexShaderSource =
     "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 0) in vec3 aPos;\n" // the position variable has attribute position 0
     "void main(){\n"
-    "gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);}\n"
+    "gl_Position = vec4(aPos, 1.0);}\n"
     "\0";
 
 const char* fragmentShaderSource =
     "#version 330 core\n"
     "out vec4 FragColor;\n"
+    "uniform vec4 ourColor;\n" // we set this variable in the OpenGL code,
+    // uniforms are global variable, we can define them in any shader we'd like
+    // if you declare a uniform that isn't used anywhere in your GLSL code the compiler will silently
+    // remove the variable from the compiled version which is the cause for several frustrating errors!
     "void main() {\n"
-    "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "FragColor = ourColor;\n"
     "}"
     "\0";
+
 
 
 int main() {
@@ -111,54 +117,33 @@ int main() {
     glDeleteShader(fragmentShader);
 
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,   // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f    // top left
-    };
-    uint32 indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
     };
 
     // VAO
-    unsigned int VBO, VAO, EBO;
+    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and the configure vertex attributes
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // we give the vertex attribute location as the first argument(0)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // And that's it. In case you have multiple objects you want to draw, you first generate/configure all the VAOs
-    // (and thus the required VBO and attribute pointers) and store those for later use. The moment you want to draw one of
-    // the objects, you just take the corresponding VAO, bind it, then draw the object and unbind the VAO again.
-
     // this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so we can unbind it
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // DO NOT unbidng the EBO while a VAO is active as the bound element buffer object is stored in the VAO; keep the EBO bound
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // we can unbind the VAO so other VAO calls won't accidentally modify this VAO, but this rarely happens.
     // Modifying other VAOs requires a call to glBindVertexArray anyway so we generally don't unbind VAOs(nor VBOs) when it's not
     // directly necessary
-    // glBindVertexArray(0);
-
-    // uncomment this call to draw in wireframe polygons
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBindVertexArray(0);
 
     while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
 
         // Input
         processInput(window);
@@ -167,20 +152,28 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Update shader uniform
+        float32 timeValue = glfwGetTime();
+        float32 greenValue = (std::sin(timeValue) / 2.0f) + 0.5f;
+        int32 vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
         glUseProgram(shaderProgram);
-        // glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glBindVertexArray(0); // no need to unbind it every time
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
-    // clear resources
+    // de-allocate all resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
 
+    // clear resources
     glfwTerminate();
 
     return 0;
