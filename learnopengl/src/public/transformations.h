@@ -274,13 +274,15 @@ std::vector<std::pair<float32, float32>> extractEulerAngles(matrix<float32> rotM
     return std::vector {std::make_pair(theta1, theta2), std::make_pair(psi1, psi2), std::make_pair(fi1, fi2)};
 }
 
-// Extracting Euler Angles from a Rotation Matrix, Mike Day, Insomniac Games
-// https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
+/**
+ * Extracting Euler Angles from a Rotation Matrix by Mike Day, Insomniac Games
+ * https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
+*/
 std::vector<float32> extractEulerAnglesAlt(matrix<float32> rotMatrix) {
     float32 theta1 = std::atan2(rotMatrix[2][1], rotMatrix[2][2]);
     float32 s1 = std::sin(theta1);
     float32 c1 = std::cos(theta1);
-    float32 c2 = std::sqrt(std::pow(rotMatrix[0][0], 2) + std::pow(rotMatrix[1][0], 2));
+    float32 c2 = std::sqrt(rotMatrix[0][0]*rotMatrix[0][0] + rotMatrix[1][0]*rotMatrix[1][0]);
     float32 theta2 = std::atan2(-rotMatrix[2][0], c2);
     float32 theta3 = std::atan2(s1*rotMatrix[0][2] - c1*rotMatrix[0][1], c1*rotMatrix[1][1] - s1*rotMatrix[1][2]);
 
