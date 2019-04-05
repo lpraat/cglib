@@ -164,11 +164,11 @@ struct Mat4 {
         };
     }
 
-    void print() {
+    void print() const {
         uint8 i;
         std::cout << "Mat4(";
         for (i = 0; i < 15; i++) {
-            std::cout << v[i] << ",";
+            std::cout << v[i] << ", ";
         }
         std::cout << v[i] << ")";
     }

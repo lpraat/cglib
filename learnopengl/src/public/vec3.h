@@ -136,7 +136,7 @@ struct Vec3 {
         return {y*other.z - z*other.y, z*other.x - x*other.z, x*other.y - y*other.x};
     }
 
-    void print() {
+    void print() const {
         std::cout << "Vec3(" << x << "," << y << "," << z << ")";
     }
 };

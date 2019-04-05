@@ -4,42 +4,43 @@
 #include <iostream>
 #include <cmath>
 #include "constants.h"
+#include "vec3.h"
 
-class Quat {
-private:
-    float32 a;
-    float32 b;
-    float32 c;
-    float32 d;
+// TODO modify this like Mat4, Vec4 ecc..
+namespace glp {
 
-public:
-    Quat(float32 a, float32 b, float32 c, float32 d) : a(a), b(b), c(c), d(d) {}
+template <typename T = float32>
+struct Quat {
+    T a, b, c, d;
+
+    Quat(T a, T b, T c, T d) : a(a), b(b), c(c), d(d) {}
 
     // TODO change with fixed vector of size 3
-    Quat(float32 theta, std::vector<float32> axis) {
-        float32 cosThetaHalved = std::cos((theta * pi()) / 180 / 2);
-        float32 sinThetaHalved = std::sin((theta * pi()) / 180 / 2);
+    Quat(T theta, Vec3<T> axis) {
+        T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
+        T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
 
         a = cosThetaHalved;
-        b = sinThetaHalved * axis[0];
-        c = sinThetaHalved * axis[1];
-        d = sinThetaHalved * axis[2];
+        b = sinThetaHalved * axis.x;
+        c = sinThetaHalved * axis.y;
+        d = sinThetaHalved * axis.z;
     }
 
-    Quat operator+(const Quat& other) const {
-        return Quat {a + other.a, b + other.b, c + other.c, d + other.d};
+    // TODO Add +=
+    Quat<T> operator+(const Quat<T>& other) const {
+        return {a + other.a, b + other.b, c + other.c, d + other.d};
     }
 
-    Quat operator*(float32 scalar) const {
-        return Quat {a * scalar, b * scalar, c * scalar, d * scalar};
+    Quat<T> operator*(T scalar) const {
+        return {a * scalar, b * scalar, c * scalar, d * scalar};
     }
 
-    friend Quat operator*(float32 scalar, const Quat& quat) {
+    friend Quat<T> operator*(T scalar, const Quat<T>& quat) {
         return quat * scalar;
     }
 
-    Quat operator*(const Quat& other) const {
-        return Quat {
+    Quat<T> operator*(const Quat<T>& other) const {
+        return {
             a * other.a - b * other.b - c * other.c - d * other.d,
             a * other.b + b * other.a + c * other.d - d * other.c,
             a * other.c + c * other.a + d * other.b - b * other.d,
@@ -47,16 +48,11 @@ public:
         };
     }
 
-    // TODO change with fixed matrix of size 4
-    matrix<float32> toRotMatrix() {
-        float32 bSquared = std::pow(b, 2);
-        float32 cSquared = std::pow(c, 2);
-        float32 dSquared = std::pow(d, 2);
-
+    Mat4<T> toRotMatrix() {
         return {
-            {1 - 2*(cSquared + dSquared), 2*(b*c + a*d), 2*(b*d - a*c), 0},
-            {2*(b*c - a*d), 1 - 2*(bSquared + dSquared), 2*(c*d + a*b), 0},
-            {2*(b*d + a*c), 2*(c*d - a*b), 1 - 2*(bSquared + cSquared), 0},
+            {1 - 2*(c*c + d*d), 2*(b*c + a*d), 2*(b*d - a*c), 0},
+            {2*(b*c - a*d), 1 - 2*(b*b + d*d), 2*(c*d + a*b), 0},
+            {2*(b*d + a*c), 2*(c*d - a*b), 1 - 2*(b*b + c*c), 0},
             {0, 0, 0, 1}
         };
     }
@@ -65,4 +61,6 @@ public:
         printf("Quat(%f, %f, %f, %f)\n", a, b, c, d);
     }
 };
+
+}; // namespace glp
 

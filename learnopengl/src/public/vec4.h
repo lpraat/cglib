@@ -132,7 +132,7 @@ struct Vec4 {
         return x*other.x + y*other.y + z*other.z + w*other.w;
     }
 
-    void print() {
+    void print() const {
         std::cout << "Vec4(" << x << "," << y << "," << z << "," << w << ")";
     }
 };
