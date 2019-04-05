@@ -31,8 +31,21 @@ struct Mat4 {
         }
     }
 
+    static Mat4<T> identity() {
+        return {
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+    }
+
     T& operator()(uint8 i, uint8 j) {
         return v[(i << 2) + j];
+    }
+
+    T* getPtr() {
+        return &v[0];
     }
 
     // Scalar matrix addition

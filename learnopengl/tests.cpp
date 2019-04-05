@@ -1,102 +1,44 @@
 #include <iostream>
-#include "transformations.h"
+#include "transform.h"
 #include <vector>
 #include "core_types.h"
 #include "quat.h"
 #include <cmath>
 #include "constants.h"
 
+using namespace glp;
+
 int main() {
-    std::vector<float32> v {
+    Vec3 v {
         static_cast<float32>(std::cos(30 * pi() / 180)),
         static_cast<float32>(std::sin(30 * pi() / 180)),
-        0
+        0.0f
         };
 
-    Quat q(90, v);
+    Quat q(90.0f, v);
     q.print();
 
-    std::vector<float32> v1 {1,2,3,1};
+    Vec4 v1 {1.0f, 2.0f, 3.0f, 1.0f};
 
-    for (auto& el : extractEulerAngles(q.toRotMatrix())) {
-        std::cout << "Theta " << el.first * 180/pi() << " " << el.second*180/pi() << std::endl;
-    }
+    q.toRotMatrix().print(); std::cout << std::endl;
 
-    std::cout << "QROTMATRIX" << std::endl;
-    for (auto& row : q.toRotMatrix()) {
-        for (auto& el : row) {
-            std::cout << el << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::vector<float32> m;
-
-    m = dotProduct(q.toRotMatrix(), v1);
+    Vec4 m {q.toRotMatrix().dot(v1)};
 
     std::cout << "Resulting vector using quat" << std::endl;
-    for (auto& el : m) {
-        std::cout << el << std::endl;
-    }
+    m.print(); std::cout << std::endl;
 
-    auto res = extractEulerAngles(q.toRotMatrix());
+    auto res2 = extractEulerAngles(q.toRotMatrix());
 
-    matrix<float32> rot2;
-
-    std::vector<matrix<float32>> composed = {
-        rotationZMatrix((res[2].second * 180) / pi()),
-        rotationYMatrix((res[0].second * 180) / pi()),
-        rotationXMatrix((res[1].second * 180) / pi()),
+    std::vector<Mat4<float32>> composed2 = {
+        rotateZ(res2.z * 180 / pi()),
+        rotateY(res2.y * 180 / pi()),
+        rotateX(res2.x * 180 / pi()),
     };
-    rot2 = compose(composed);
 
+    Mat4 rotMatrix {compose(composed2)};
+    rotMatrix.print(); std::cout << std::endl;
 
-    std::cout << "ROT" << std::endl;
-    for (auto& row : rot2) {
-        for (auto& el : row) {
-            std::cout << el << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::vector<float32> m1;
-
-    m1 = dotProduct(rot2, v1);
-
-    std::cout << "Resulting vector using euler" << std::endl;
-    for (auto& el : m1) {
-        std::cout << el << std::endl;
-    }
-
-
-    auto res2 = extractEulerAnglesAlt(q.toRotMatrix());
-
-    matrix<float32> rot3;
-
-    std::vector<matrix<float32>> composed2 = {
-        rotationZMatrix(res2[2] * 180 /pi()),
-        rotationYMatrix(res2[1] * 180 / pi()),
-        rotationXMatrix(res2[0] * 180 / pi()),
-    };
-    rot3 = compose(composed2);
-
-
-    std::cout << "ROT3" << std::endl;
-    for (auto& row : rot3) {
-        for (auto& el : row) {
-            std::cout << el << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::vector<float32> m2;
-
-    m2 = dotProduct(rot3, v1);
-
-    std::cout << "Resulting vector using euler" << std::endl;
-    for (auto& el : m2) {
-        std::cout << el << std::endl;
-    }
-
-
-
+    Vec4 m2 {rotMatrix.dot(v1)};
+     std::cout << "Resulting vector using euler" << std::endl;
+     m2.print();
 }

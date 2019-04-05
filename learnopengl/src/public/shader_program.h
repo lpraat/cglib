@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include <iostream>
+#include "mat4.h"
 
 class ShaderProgram {
 private:
@@ -69,11 +70,15 @@ public:
         glDeleteProgram(id);
     }
 
-    void use() {
+    uint32 getId() const {
+        return id;
+    }
+
+    void use() const {
         glUseProgram(id);
     }
 
-    void checkShader(uint32 shaderId, std::string type) {
+    void checkShader(uint32 shaderId, const std::string& type) const {
         int32 success;
         glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
 
@@ -87,7 +92,7 @@ public:
         }
     }
 
-    void checkProgram() {
+    void checkProgram() const {
         int32 success;
         glGetProgramiv(id, GL_LINK_STATUS, &success);
 
@@ -101,8 +106,20 @@ public:
         }
     }
 
+    void setBool(const std::string& name, bool value) const {
+        glUniform1i(glGetUniformLocation(id, name.c_str()), (int32)value);
+    }
 
+    void setInt(const std::string& name, int32 value) const {
+        glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+    }
 
+    void setFloat(const std::string& name, float32 value) const {
+        glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+    }
 
+    void setMat4(const std::string& name, glp::Mat4<float32>& m4) const {
+        glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_TRUE, m4.getPtr());
+    }
 
 };
