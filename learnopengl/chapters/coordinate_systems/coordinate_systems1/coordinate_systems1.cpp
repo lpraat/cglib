@@ -56,8 +56,8 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     ShaderProgram shaderProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/transformations1/shaders/vertex.vs",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/transformations1/shaders/fragment.fs"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/coordinate_systems1/shaders/vertex.vs",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/coordinate_systems1/shaders/fragment.fs"
     );
 
     // Generating first texture
@@ -73,7 +73,7 @@ int main() {
 
     // Load and generate texture 1
     int32 width1, height1, nrChannels1;
-    uint8 *data1 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/container.jpg",
+    uint8 *data1 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/container.jpg",
                             &width1, &height1, &nrChannels1, 0);
     if (!data1) {
         std::cout << "Failed to load first texture" << std::endl;
@@ -98,7 +98,7 @@ int main() {
     // Load and generate texture 2
     int32 width2, height2, nrChannels2;
     stbi_set_flip_vertically_on_load(true);
-    uint8 *data2 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/awesomeface.png",
+    uint8 *data2 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/awesomeface.png",
                             &width2, &height2, &nrChannels2, 0);
     if (!data1) {
         std::cout << "Failed to load first texture" << std::endl;
@@ -155,10 +155,6 @@ int main() {
     shaderProgram.setInt("texture1", 0);
     shaderProgram.setInt("texture2", 1);
 
-    glp::Mat4 t {
-        glp::scale(0.5f, 0.5f, 0.5f).dot(glp::rotateZ(90.0f))
-    };
-    shaderProgram.setMat4("transform", t);
 
 
     while (!glfwWindowShouldClose(window)) {
@@ -169,13 +165,25 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shaderProgram.use();
-
+        // Bind textures on corresponding texture unit
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
-
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // Model matrix
+        glp::Mat4 model {glp::rotateX(-55.0f)};
+
+        // View matrix
+        glp::Mat4 view {glp::translate(0.0f, 0.0f, -3.0f)};
+
+        // Projection matrix
+        glp::Mat4 projection {glp::perspectiveProjection(45.0f, 0.1f, 100.0f, static_cast<float32>(WIDTH)/HEIGHT)};
+
+        shaderProgram.use();
+        shaderProgram.setMat4("model", model);
+        shaderProgram.setMat4("view", view);
+        shaderProgram.setMat4("projection", projection);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

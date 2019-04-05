@@ -26,6 +26,16 @@ Mat4<T> translate(T dx, T dy, T dz) {
 }
 
 template <typename T = float32>
+Mat4<T> translate(Vec3<T> d) {
+    return {
+        {1, 0, 0, d.x},
+        {0, 1, 0, d.y},
+        {0, 0, 1, d.z},
+        {0, 0, 0, 1}
+    };
+}
+
+template <typename T = float32>
 Mat4<T> scale(T sx, T sy, T sz) {
     return {
         {sx, 0, 0, 0},
@@ -135,6 +145,16 @@ Mat4<T> shearZ(T hx, T hy) {
         {1, 0, hx, 0},
         {0, 1, hy, 0},
         {0, 0, 1, 0},
+        {0, 0, 0, 1}
+    };
+}
+
+template <typename T = float32>
+Mat4<T> orthogonalProjection(T l, T r, T b, T t, T n, T f) {
+    return {
+        {2/(r-l), 0, 0, -(l+r)/(r-l)},
+        {0, 2/(t-b), 0, -(t+b)/(t-b)},
+        {0, 0, -2/(f-n), -(f+n)/(f-n)},
         {0, 0, 0, 1}
     };
 }

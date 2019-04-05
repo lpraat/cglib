@@ -10,8 +10,8 @@
 #include "vec4.h"
 #include "vec3.h"
 #include "mat4.h"
+#include "quat.h"
 #include "transform.h"
-
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -56,8 +56,8 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     ShaderProgram shaderProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/transformations1/shaders/vertex.vs",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/transformations1/shaders/fragment.fs"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/coordinate_systems2/shaders/vertex.vs",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/coordinate_systems2/shaders/fragment.fs"
     );
 
     // Generating first texture
@@ -73,7 +73,7 @@ int main() {
 
     // Load and generate texture 1
     int32 width1, height1, nrChannels1;
-    uint8 *data1 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/container.jpg",
+    uint8 *data1 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/container.jpg",
                             &width1, &height1, &nrChannels1, 0);
     if (!data1) {
         std::cout << "Failed to load first texture" << std::endl;
@@ -98,7 +98,7 @@ int main() {
     // Load and generate texture 2
     int32 width2, height2, nrChannels2;
     stbi_set_flip_vertically_on_load(true);
-    uint8 *data2 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/transformations/awesomeface.png",
+    uint8 *data2 = stbi_load("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/coordinate_systems/awesomeface.png",
                             &width2, &height2, &nrChannels2, 0);
     if (!data1) {
         std::cout << "Failed to load first texture" << std::endl;
@@ -109,44 +109,68 @@ int main() {
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data2);
 
-    float vertices[] {
-        // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
-    };
+    float32 vertices[] = {
+        // positions          // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-    uint32 indices[] {
-        0, 1, 3,
-        1, 2, 3
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
     // VAO
-    unsigned int VBO, VAO, EBO;
+    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and the configure vertex attributes
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     // Texture coordinates attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
 
@@ -155,11 +179,8 @@ int main() {
     shaderProgram.setInt("texture1", 0);
     shaderProgram.setInt("texture2", 1);
 
-    glp::Mat4 t {
-        glp::scale(0.5f, 0.5f, 0.5f).dot(glp::rotateZ(90.0f))
-    };
-    shaderProgram.setMat4("transform", t);
-
+    // Use z-buffer
+    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(window)) {
         // Input
@@ -167,18 +188,32 @@ int main() {
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram.use();
-
+        // Bind textures on corresponding texture unit
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
-
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        // Model matrix
+        glp::Quat q(-50.0f * static_cast<float32>(glfwGetTime()), glp::Vec3 {0.5f, 1.0f, 0.0f});
+        glp::Mat4 model {q.toRotMatrix()};
+
+        // View matrix
+        glp::Mat4 view {glp::translate(0.0f, 0.0f, -3.0f)};
+
+        // Projection matrix
+        // Since this rarely changes it is better to set it outside the main loop
+        glp::Mat4 projection {glp::perspectiveProjection(45.0f, 0.1f, 100.0f, static_cast<float32>(WIDTH)/HEIGHT)};
+
+        shaderProgram.use();
+        shaderProgram.setMat4("model", model);
+        shaderProgram.setMat4("view", view);
+        shaderProgram.setMat4("projection", projection);
+
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         // glBindVertexArray(0); // no need to unbind it every time
 
         // Swap buffers and poll IO events
@@ -189,7 +224,6 @@ int main() {
     // de-allocate all resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
 
     // clear resources
     glfwTerminate();

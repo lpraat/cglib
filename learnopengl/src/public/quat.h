@@ -17,6 +17,7 @@ struct Quat {
 
     // TODO change with fixed vector of size 3
     Quat(T theta, Vec3<T> axis) {
+        axis.normalize();
         T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
         T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
 
