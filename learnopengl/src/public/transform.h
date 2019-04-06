@@ -12,7 +12,7 @@ namespace glp {
 
 // Forward
 template <typename T, typename S = uint8>
-Mat4<T> compose(std::vector<Mat4<T>>& matrices);
+Mat4<T> compose(const std::vector<Mat4<T>>& matrices);
 
 
 template <typename T = float32>
@@ -26,7 +26,7 @@ Mat4<T> translate(T dx, T dy, T dz) {
 }
 
 template <typename T = float32>
-Mat4<T> translate(Vec3<T> d) {
+Mat4<T> translate(const Vec3<T>& d) {
     return {
         {1, 0, 0, d.x},
         {0, 1, 0, d.y},
@@ -82,8 +82,8 @@ Mat4<T> centralMirror() {
 
 template <typename T = float32>
 Mat4<T> rotateX(T alpha) {
-    T cosAlpha = std::cos(alpha * toRadians<T>());
-    T sinAlpha = std::sin(alpha * toRadians<T>());
+    const T cosAlpha = std::cos(alpha * toRadians<T>());
+    const T sinAlpha = std::sin(alpha * toRadians<T>());
 
     return {
         {1, 0, 0, 0},
@@ -95,8 +95,8 @@ Mat4<T> rotateX(T alpha) {
 
 template <typename T = float32>
 Mat4<T> rotateY(T alpha) {
-    T cosAlpha = std::cos(alpha * toRadians<T>());
-    T sinAlpha = std::sin(alpha * toRadians<T>());
+    const T cosAlpha = std::cos(alpha * toRadians<T>());
+    const T sinAlpha = std::sin(alpha * toRadians<T>());
 
     return {
         {cosAlpha, 0, sinAlpha, 0},
@@ -108,8 +108,8 @@ Mat4<T> rotateY(T alpha) {
 
 template <typename T = float32>
 Mat4<T> rotateZ(T alpha) {
-    T cosAlpha = std::cos(alpha * toRadians<T>());
-    T sinAlpha = std::sin(alpha * toRadians<T>());
+    const T cosAlpha = std::cos(alpha * toRadians<T>());
+    const T sinAlpha = std::sin(alpha * toRadians<T>());
 
     return {
         {cosAlpha, -sinAlpha, 0, 0},
@@ -171,7 +171,7 @@ Mat4<T> orthogonalProjection(T hw, T n, T f, T a) {
 
 template <typename T = float32>
 Mat4<T> isometricProjection(T hw, T n, T f, T a) {
-    std::vector<Mat4<T>> toCompose {
+    const std::vector<Mat4<T>> toCompose {
         orthogonalProjection<T>(hw, n, f, a),
         rotateX<T>(35.26),
         rotateY<T>(45)
@@ -181,7 +181,7 @@ Mat4<T> isometricProjection(T hw, T n, T f, T a) {
 
 template <typename T = float32>
 Mat4<T> dimetricProjection(T alpha, T hw, T n, T f, T a) {
-    std::vector<Mat4<T>> toCompose {
+    const std::vector<Mat4<T>> toCompose {
         orthogonalProjection<T>(hw, n, f, a),
         rotateX<T>(alpha),
         rotateY<T>(45)
@@ -191,7 +191,7 @@ Mat4<T> dimetricProjection(T alpha, T hw, T n, T f, T a) {
 
 template <typename T = float32>
 Mat4<T> trimetricProjection(T alpha, T beta, T hw, T n, T f, T a) {
-    std::vector<Mat4<T>> toCompose {
+    const std::vector<Mat4<T>> toCompose {
         orthogonalProjection<T>(hw, n, f, a),
         rotateX<T>(alpha),
         rotateY<T>(beta)
@@ -201,27 +201,41 @@ Mat4<T> trimetricProjection(T alpha, T beta, T hw, T n, T f, T a) {
 
 template <typename T = float32>
 Mat4<T> cavalierProjection(T alpha, T hw, T n, T f, T a) {
-    T cosAlpha = std::cos(alpha * toRadians<T>());
-    T sinAlpha = std::sin(alpha * toRadians<T>());
+    const T cosAlpha = std::cos(alpha * toRadians<T>());
+    const T sinAlpha = std::sin(alpha * toRadians<T>());
     return orthogonalProjection<T>(hw, n, f, a).dot(shearZ<T>(-cosAlpha, -sinAlpha));
 }
 
 template <typename T = float32>
 Mat4<T> cabinetProjection(T alpha, T hw, T n, T f, T a) {
-    T cosAlpha = std::cos(alpha * toRadians<T>());
-    T sinAlpha = std::sin(alpha * toRadians<T>());
+    const T cosAlpha = std::cos(alpha * toRadians<T>());
+    const T sinAlpha = std::sin(alpha * toRadians<T>());
     return orthogonalProjection<T>(hw, n, f, a).dot(shearZ<T>(-0.5 * cosAlpha, -0.5 * sinAlpha));
 }
 
 template <typename T = float32>
 Mat4<T> perspectiveProjection(T fov, T n, T f, T a) {
-    T tanFovHalved = std::tan((fov * toRadians<T>()) / 2);
+    const T tanFovHalved = std::tan((fov * toRadians<T>()) / 2);
 
     return {
         {1/(a * tanFovHalved), 0, 0, 0},
         {0, 1/tanFovHalved, 0, 0},
         {0, 0, (f+n)/(n-f), 2*f*n/(n-f)},
         {0, 0, -1, 0}
+    };
+}
+
+template <typename T = float32>
+Mat4<T> lookAt(const Vec3<T>& position, const Vec3<T>& target, const Vec3<T>& up) {
+    const Vec3<T> vz = (position - target).normalize();
+    const Vec3<T> vx = up.cross(vz).normalize();
+    const Vec3<T> vy = vz.cross(vx);
+
+    return {
+        {vx.x, vx.y, vx.z, -vx.dot(position)},
+        {vy.x, vy.y, vy.z, -vy.dot(position)},
+        {vz.x, vz.y, vz.z, -vz.dot(position)},
+        {0, 0, 0, 1}
     };
 }
 
@@ -241,7 +255,7 @@ Mat4<T> compose(std::vector<Mat4<T>>& matrices) {
  * https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
 */
 template <typename T = float32>
-Vec3<T> extractEulerAngles(Mat4<T> rotMatrix) {
+Vec3<T> extractEulerAngles(const Mat4<T>& rotMatrix) {
     T theta1 = std::atan2(rotMatrix(2, 1), rotMatrix(2, 2));
     T s1 = std::sin(theta1);
     T c1 = std::cos(theta1);

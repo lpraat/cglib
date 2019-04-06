@@ -21,7 +21,7 @@ struct Mat4 {
         T v[16];
     };
 
-    Mat4(std::initializer_list<std::initializer_list<T>> l) {
+    Mat4(const std::initializer_list<std::initializer_list<T>>& l) {
         uint8 i = 0;
         for (auto& row : l) {
             for (auto& el : row) {
@@ -66,7 +66,7 @@ struct Mat4 {
         };
     }
 
-    friend Mat4<T> operator+(T s, Mat4& m4) {
+    friend Mat4<T> operator+(T s, const Mat4& m4) {
         return {
             {m4.x0 + s, m4.y0 + s, m4.z0 + s, m4.w0 + s},
             {m4.x1 + s, m4.y1 + s, m4.z1 + s, m4.w1 + s},
@@ -111,7 +111,7 @@ struct Mat4 {
         };
     }
 
-    friend Mat4<T> operator*(T s, Mat4& m4) {
+    friend Mat4<T> operator*(T s, const Mat4& m4) {
         return {
             {m4.x0 * s, m4.y0 * s, m4.z0 * s, m4.w0 * s},
             {m4.x1 * s, m4.y1 * s, m4.z1 * s, m4.w1 * s},
@@ -135,6 +135,79 @@ struct Mat4 {
             {x1 / s, y1 / s, z1 / s, w1 / s},
             {x2 / s, y2 / s, z2 / s, w2 / s},
             {x3 / s, y3 / s, z3 / s, w3 / s}
+        };
+    }
+
+    // Matrix matrix addition
+    Mat4<T>& operator+=(const Mat4<T>& other) {
+        x0 += other.x0; y0 += other.y0; z0 += other.z0; w0 += other.w0;
+        x1 += other.x1; y1 += other.y1; z1 += other.z1; w1 += other.w1;
+        x2 += other.x2; y2 += other.y2; z2 += other.z2; w2 += other.w2;
+        x3 += other.x3; y3 += other.y3; z3 += other.z3; w3 += other.w3;
+        return *this;
+    }
+
+    Mat4<T>& operator+(const Mat4<T>& other) const {
+        return {
+            {x0 + other.x0, y0 + other.y0, z0 + other.z0, w0 + other.w0},
+            {x1 + other.x1, y1 + other.y1, z1 + other.z1, w1 + other.w1},
+            {x2 + other.x2, y2 + other.y2, z2 + other.z2, w2 + other.w2},
+            {x3 + other.x3, y3 + other.y3, z3 + other.z3, w0 + other.w3},
+        };
+    }
+
+    // Matrix matrix subtraction
+    Mat4<T>& operator-=(const Mat4<T>& other) {
+        x0 -= other.x0; y0 -= other.y0; z0 -= other.z0; w0 -= other.w0;
+        x1 -= other.x1; y1 -= other.y1; z1 -= other.z1; w1 -= other.w1;
+        x2 -= other.x2; y2 -= other.y2; z2 -= other.z2; w2 -= other.w2;
+        x3 -= other.x3; y3 -= other.y3; z3 -= other.z3; w3 -= other.w3;
+        return *this;
+    }
+
+    Mat4<T>& operator-(const Mat4<T>& other) const {
+        return {
+            {x0 - other.x0, y0 - other.y0, z0 - other.z0, w0 - other.w0},
+            {x1 - other.x1, y1 - other.y1, z1 - other.z1, w1 - other.w1},
+            {x2 - other.x2, y2 - other.y2, z2 - other.z2, w2 - other.w2},
+            {x3 - other.x3, y3 - other.y3, z3 - other.z3, w0 - other.w3},
+        };
+    }
+
+    // Matrix matrix multiplication
+    Mat4<T>& operator*=(const Mat4<T>& other) {
+        x0 *= other.x0; y0 *= other.y0; z0 *= other.z0; w0 *= other.w0;
+        x1 *= other.x1; y1 *= other.y1; z1 *= other.z1; w1 *= other.w1;
+        x2 *= other.x2; y2 *= other.y2; z2 *= other.z2; w2 *= other.w2;
+        x3 *= other.x3; y3 *= other.y3; z3 *= other.z3; w3 *= other.w3;
+        return *this;
+    }
+
+    Mat4<T>& operator*(const Mat4<T>& other) const {
+        return {
+            {x0 * other.x0, y0 * other.y0, z0 * other.z0, w0 * other.w0},
+            {x1 * other.x1, y1 * other.y1, z1 * other.z1, w1 * other.w1},
+            {x2 * other.x2, y2 * other.y2, z2 * other.z2, w2 * other.w2},
+            {x3 * other.x3, y3 * other.y3, z3 * other.z3, w0 * other.w3},
+        };
+    }
+
+
+    // Matrix matrix division
+    Mat4<T>& operator/=(const Mat4<T>& other) {
+        x0 /= other.x0; y0 /= other.y0; z0 /= other.z0; w0 /= other.w0;
+        x1 /= other.x1; y1 /= other.y1; z1 /= other.z1; w1 /= other.w1;
+        x2 /= other.x2; y2 /= other.y2; z2 /= other.z2; w2 /= other.w2;
+        x3 /= other.x3; y3 /= other.y3; z3 /= other.z3; w3 /= other.w3;
+        return *this;
+    }
+
+    Mat4<T>& operator/(const Mat4<T>& other) const {
+        return {
+            {x0 / other.x0, y0 / other.y0, z0 / other.z0, w0 / other.w0},
+            {x1 / other.x1, y1 / other.y1, z1 / other.z1, w1 / other.w1},
+            {x2 / other.x2, y2 / other.y2, z2 / other.z2, w2 / other.w2},
+            {x3 / other.x3, y3 / other.y3, z3 / other.z3, w0 / other.w3},
         };
     }
 
