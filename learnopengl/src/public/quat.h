@@ -11,20 +11,32 @@ namespace glp {
 
 template <typename T = float32>
 struct Quat {
-    T a, b, c, d;
+
+    union {
+        struct {
+            T a, b, c, d;
+        };
+
+        struct {
+            T w, x, y, z;
+        };
+    };
 
     Quat(T a, T b, T c, T d) : a(a), b(b), c(c), d(d) {}
 
     // TODO change with fixed vector of size 3
-    Quat(T theta, Vec3<T>& axis) {
-        axis.normalize();
+    Quat(T theta, const Vec3<T>& normalizedAxis) {
         T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
         T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
 
         a = cosThetaHalved;
-        b = sinThetaHalved * axis.x;
-        c = sinThetaHalved * axis.y;
-        d = sinThetaHalved * axis.z;
+        b = sinThetaHalved * normalizedAxis.x;
+        c = sinThetaHalved * normalizedAxis.y;
+        d = sinThetaHalved * normalizedAxis.z;
+    }
+
+    Quat<T> conjugate() const {
+        return {a, -b, -c, -d};
     }
 
     // TODO Add +=
@@ -51,9 +63,9 @@ struct Quat {
 
     Mat4<T> toRotMatrix() {
         return {
-            {1 - 2*(c*c + d*d), 2*(b*c + a*d), 2*(b*d - a*c), 0},
-            {2*(b*c - a*d), 1 - 2*(b*b + d*d), 2*(c*d + a*b), 0},
-            {2*(b*d + a*c), 2*(c*d - a*b), 1 - 2*(b*b + c*c), 0},
+            {1 - 2*(c*c + d*d), 2*(b*c - a*d), 2*(b*d + a*c), 0},
+            {2*(b*c + a*d), 1 - 2*(b*b + d*d), 2*(c*d - a*b), 0},
+            {2*(b*d - a*c), 2*(c*d + a*b), 1 - 2*(b*b + c*c), 0},
             {0, 0, 0, 1}
         };
     }
