@@ -46,6 +46,17 @@ Mat4<T> scale(T sx, T sy, T sz) {
 }
 
 template <typename T = float32>
+Mat4<T> scale(const Vec3<T>& s) {
+    return {
+        {s.x, 0, 0, 0},
+        {0, s.y, 0, 0},
+        {0, 0, s.z, 0},
+        {0, 0, 0, 1}
+    };
+}
+
+
+template <typename T = float32>
 Mat4<T> planarMirrorXY() {
     return scale<T>(1, 1, -1);
 }
@@ -255,7 +266,7 @@ Mat4<T> compose(std::vector<Mat4<T>>& matrices) {
  * https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
 */
 template <typename T = float32>
-Vec3<T> extractEulerAngles(const Mat4<T>& rotMatrix) {
+Vec3<T> extractEulerAngles(Mat4<T>& rotMatrix) {
     T theta1 = std::atan2(rotMatrix(2, 1), rotMatrix(2, 2));
     T s1 = std::sin(theta1);
     T c1 = std::cos(theta1);

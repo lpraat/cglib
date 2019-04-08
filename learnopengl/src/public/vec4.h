@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <cmath>
+#include "vec3.h"
 
 namespace glp {
 
@@ -35,6 +36,10 @@ struct Vec4 {
     Vec4<T> normalized() {
         T l = length();
         return {x / l, y / l, z / l, w / l};
+    }
+
+    Vec4<T> operator-() const {
+        return {-x, -y, -z, -w};
     }
 
     // Vector scalar addition

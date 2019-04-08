@@ -37,6 +37,11 @@ struct Vec3 {
         return {x / l, y / l, z / l};
     }
 
+
+    Vec3<T> operator-() const {
+        return {-x, -y, -z};
+    }
+
     // Scalar vector addition
     Vec3<T>& operator+=(T s) {
         x += s; y += s; z += s;
@@ -61,7 +66,6 @@ struct Vec3 {
     Vec3<T> operator-(T s) const {
         return {x - s, y - s, z - s};
     }
-
 
     // Scalar vector multiplication
     Vec3<T>& operator*=(T s) {

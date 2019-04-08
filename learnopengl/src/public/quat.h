@@ -35,6 +35,17 @@ struct Quat {
         d = sinThetaHalved * normalizedAxis.z;
     }
 
+    T length() const {
+        return std::sqrt(a*a + b*b + c*c + d*d);
+    }
+
+    // Normalize
+    Quat<T>& normalize() {
+        T l = length();
+        a /= l; b /= l; c /= l; d/= l;
+        return *this;
+    }
+
     Quat<T> conjugate() const {
         return {a, -b, -c, -d};
     }
