@@ -8,18 +8,12 @@
 namespace glp {
 
 enum class FreeCameraMovement {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-    ROLL_P,
-    ROLL_M,
-    PITCH_P,
-    PITCH_M,
-    YAW_P,
-    YAW_M
+    FORWARD, BACKWARD,
+    LEFT, RIGHT,
+    UP, DOWN,
+    ROLL_P,ROLL_M,
+    PITCH_P, PITCH_M,
+    YAW_P, YAW_M
 };
 
 template <typename T>
@@ -34,20 +28,15 @@ private:
     Vec3<T> position;
     Quat<T> orientation;
 
-    T deltaRight;
-    T deltaForward;
-    T deltaUp;
-
-    T roll;
-    T pitch;
-    T yaw;
+    T deltaUp, deltaForward, deltaRight;
+    T roll, pitch, yaw;
 
     bool positionNeedsUpdate = true;
     bool orientationNeedsUpdate = true;
 
 public:
     FreeCamera() :
-         orientation{Quat {-360.0f, Vec3 {0.0f, 0.0f, 1.0f}}}, position{0.0f, 0.0f, 3.0f} {
+         orientation{Quat<T> {-360, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
     }
 
     Mat4<T> getView() {
@@ -127,46 +116,26 @@ public:
 
     void updateOrientation() {
         if (orientationNeedsUpdate) {
-            Quat<T> qRoll = {roll, {0.0f, 0.0f, 1.0f}};
-            Quat<T> qPitch = {pitch, {1.0f, 0.0f, 0.0f}};
-            Quat<T> qYaw = {yaw, {0.0, 1.0f, 0.0f}};
+            Quat<T> qRoll {roll, {0, 0, 1}};
+            Quat<T> qPitch {pitch, {1, 0, 0}};
+            Quat<T> qYaw {yaw, {0, 1, 0}};
 
-            orientation = orientation * (qYaw* qPitch * qRoll);
-            orientation.normalize();
+            orientation *= (qYaw * qPitch * qRoll);
 
-            roll = 0;
-            pitch = 0;
-            yaw = 0;
+            roll = 0, pitch = 0, yaw = 0;
             orientationNeedsUpdate = false;
         }
     }
 
     void updatePosition() {
         if (positionNeedsUpdate) {
-            Quat<T> deltaPos = orientation * Quat<T> {0.0f, deltaRight, deltaUp, deltaForward} * orientation.conjugate();
+            Quat<T> deltaPos = orientation * Quat<T> {0, deltaRight, deltaUp, deltaForward} * orientation.conjugate();
             position += {deltaPos.x, deltaPos.y, deltaPos.z};
 
-            deltaForward = 0;
-            deltaUp = 0;
-            deltaRight = 0;
+            deltaForward = 0, deltaUp = 0, deltaRight = 0;
             positionNeedsUpdate = false;
         }
     }
-
-    // TODO put constraints on angles
-
-    // void updateOrientation(float64 xOffset, float64 yOffset) {
-    //     xOffset *= mouseSensitivity;
-    //     yOffset *= mouseSensitivity;
-
-    //     yaw += xOffset;
-    //     pitch += yOffset;
-
-    //     Quat<T> qYaw = {-yaw, {0.0, 1.0f, 0.0f}};
-    //     Quat<T> qPitch = {pitch, {1.0f, 0.0f, 0.0f}};
-
-    //     orientation = qYaw * qPitch;
-    // }
 
 };
 

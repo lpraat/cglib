@@ -202,6 +202,7 @@ struct Mat4 {
         return *this;
     }
 
+    
     Mat4<T>& operator/(const Mat4<T>& other) const {
         return {
             {x0 / other.x0, y0 / other.y0, z0 / other.z0, w0 / other.w0},

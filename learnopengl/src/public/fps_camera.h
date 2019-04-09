@@ -8,17 +8,14 @@
 namespace glp {
 
 enum class FPSCameraMovement {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT
+    FORWARD, BACKWARD,
+    LEFT, RIGHT
 };
 
 template <typename T>
 class FPSCamera {
 private:
 
-    // TODO add this to constructor/config file
     const float32 speed = 5.0f;
     const float32 mouseSensitivity = 0.1f;
     const bool constrained = true;
@@ -29,24 +26,31 @@ private:
     Vec3<T> position;
     Quat<T> orientation;
 
-    T yaw;
-    T pitch;
+    T pitch, yaw;
+    T fov;
 
 public:
-    FPSCamera(Vec3<T> up = {0.0f, 1.0f, 0.0f}, Vec3<T> pos = {0.0f, 0.0f, 0.0f}) :
-              up(up), front{0.0f, 0.0f, 0.0f, 1.0f}, position{0.0f, 0.0f, 3.0f}, orientation{front} {
+    FPSCamera(T fov, Vec3<T> up = {0, 1, 0}, Vec3<T> pos = {0, 0, 0}) :
+              up(up), front{0, 0, 0, 1}, position{0, 0, 3}, orientation{front}, fov(fov) {
         updateOrientation(0, 0);
     }
 
     Mat4<T> getView() {
-        std::cout << yaw << " " << pitch << std::endl;
         return orientation.conjugate().toRotMatrix().dot(translate(-position));
+    }
+
+    T getFov() {
+        return fov;
     }
 
     void updatePosition(FPSCameraMovement cameraMovement, float32 deltaTime) {
         float32 delta = deltaTime * speed;
 
         Quat<T> frontQuaternion = orientation * front * orientation.conjugate();
+
+        // To have a true fps camera()
+        // Vec3<T> front {frontQuaternion.x, 0, frontQuaterion.z}
+
         Vec3<T> front {frontQuaternion.x, frontQuaternion.y, frontQuaternion.z};
         Vec3<T> right {up.cross(front).normalize()};
 
@@ -81,18 +85,27 @@ public:
         pitch += yOffset;
 
         if (constrained) {
-            if (pitch > 89.0f) {
-                pitch = 89.0f;
+            if (pitch > 89) {
+                pitch = 89;
             }
-            if (pitch < -89.0f) {
-                pitch = -89.0f;
+            if (pitch < -89) {
+                pitch = -89;
             }
         }
 
-        Quat<T> qYaw = {-yaw, {0.0, 1.0f, 0.0f}};
-        Quat<T> qPitch = {pitch, {1.0f, 0.0f, 0.0f}};
+        Quat<T> qYaw {-yaw, {0, 1, 0}};
+        Quat<T> qPitch {pitch, {1, 0, 0}};
 
         orientation = qYaw * qPitch;
+    }
+
+    void updateZoom(float64 yOffset) {
+        if(fov >= 1 && fov <= 45)
+            fov -= yOffset;
+        if(fov <= 1)
+            fov = 1;
+        if(fov >= 45)
+            fov = 45;
     }
 
 };

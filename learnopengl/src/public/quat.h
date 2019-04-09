@@ -6,7 +6,6 @@
 #include "constants.h"
 #include "vec3.h"
 
-// TODO modify this like Mat4, Vec4 ecc..
 namespace glp {
 
 template <typename T = float32>
@@ -24,7 +23,6 @@ struct Quat {
 
     Quat(T a, T b, T c, T d) : a(a), b(b), c(c), d(d) {}
 
-    // TODO change with fixed vector of size 3
     Quat(T theta, const Vec3<T>& normalizedAxis) {
         T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
         T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
@@ -50,17 +48,29 @@ struct Quat {
         return {a, -b, -c, -d};
     }
 
-    // TODO Add +=
-    Quat<T> operator+(const Quat<T>& other) const {
-        return {a + other.a, b + other.b, c + other.c, d + other.d};
-    }
-
     Quat<T> operator*(T scalar) const {
         return {a * scalar, b * scalar, c * scalar, d * scalar};
     }
 
     friend Quat<T> operator*(T scalar, const Quat<T>& quat) {
         return quat * scalar;
+    }
+
+    Quat<T>& operator+=(const Quat<T>& other) const {
+        a += other.a; b += other.b; c += other.c; d += other.d;
+        return *this;
+    }
+
+    Quat<T> operator+(const Quat<T>& other) const {
+        return {a + other.a, b + other.b, c + other.c, d + other.d};
+    }
+
+    Quat<T>& operator*=(const Quat<T>& other) {
+        a = a * other.a - b * other.b - c * other.c - d * other.d;
+        b = a * other.b + b * other.a + c * other.d - d * other.c;
+        c = a * other.c + c * other.a + d * other.b - b * other.d;
+        d = a * other.d + d * other.a + b * other.c - c * other.b;
+        return *this;
     }
 
     Quat<T> operator*(const Quat<T>& other) const {
