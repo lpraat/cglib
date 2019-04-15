@@ -20,9 +20,8 @@ template <typename T>
 class FreeCamera {
 private:
     // TODO add this to constructor/config file
-    const float32 positionSpeed = 5.0f;
+    const float32 positionSpeed = 50.0f;
     const float32 orientationSpeed = 50.0f;
-    const float32 mouseSensitivity = 0.1f;
     const bool constrained = true;
 
     Vec3<T> position;
@@ -36,12 +35,13 @@ private:
 
 public:
     FreeCamera() :
-         orientation{Quat<T> {-360, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
+         orientation{Quat<T> {-360.0f, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
     }
 
     Mat4<T> getView() {
-        updateOrientation();
+        orientation.print();
         updatePosition();
+        updateOrientation();
         return orientation.conjugate().toRotMatrix().dot(translate(-position));
     }
 
@@ -121,6 +121,7 @@ public:
             Quat<T> qYaw {yaw, {0, 1, 0}};
 
             orientation *= (qYaw * qPitch * qRoll);
+            orientation.normalize();
 
             roll = 0, pitch = 0, yaw = 0;
             orientationNeedsUpdate = false;
