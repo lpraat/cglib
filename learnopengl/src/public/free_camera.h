@@ -39,9 +39,8 @@ public:
     }
 
     Mat4<T> getView() {
-        orientation.print();
-        updatePosition();
         updateOrientation();
+        updatePosition();
         return orientation.conjugate().toRotMatrix().dot(translate(-position));
     }
 

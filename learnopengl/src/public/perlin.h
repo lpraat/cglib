@@ -80,4 +80,15 @@ public:
                                lerp(u, grad(p[ab+1], x, y-1, z-1),
                                        grad(p[bb+1], x-1, y-1, z-1))));
     }
+
+    static T octave(uint8 num, T x, T y, T z) {
+        T total = 0;
+        uint16 freq = 1;
+
+        for (uint8 i = 0; i < num; i++) {
+            total += PerlinNoise::noise(x * freq, y * freq, z * freq);
+            freq <<= 1;
+        }
+        return total;
+    }
 };
