@@ -12,9 +12,58 @@
 #include "fps_camera.h"
 #include "free_camera.h"
 #include "noise.h"
+#include "perlin.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window, glp::FreeCamera<float32>& camera, float32 deltaTime);
+
+
+int32 getLevel(float32 v) {
+    return std::round(v/10);
+}
+
+void createGrid(uint16 gridSize, std::vector<float32>& grid, std::vector<float32>& colors, float32 time) {
+    grid = std::vector<float32>(gridSize * gridSize * 3);
+    colors = std::vector<float32>(gridSize * gridSize * 3);
+
+    uint64 curr = 0;
+    uint64 colorCurr = 0;
+
+    for (uint16 i = 0; i < gridSize; i++) {
+        for (uint16 j = 0; j < gridSize; j++) {
+
+            float32 frequency = 6;
+            float32 amp = 100;
+
+            float32 noise =
+                      PerlinNoise<float32>::noise (frequency * static_cast<float32>(i) / gridSize, frequency * static_cast<float32>(j) / gridSize, 0)+
+                      0.5 * PerlinNoise<float32>::noise (frequency * 2 * static_cast<float32>(i) / gridSize, frequency*2 * static_cast<float32>(j) / gridSize, 0)+
+                      0.25 * PerlinNoise<float32>::noise (frequency * 4 * static_cast<float32>(i) / gridSize, frequency*4 * static_cast<float32>(j) / gridSize, 0);
+
+            noise = (noise + 1) / 2;
+
+            float32 height = getLevel(noise * amp) * 2;
+
+            grid[curr++] = i;
+            grid[curr++] = height;
+            grid[curr++] = j;
+
+            // float32 r = distribution(generator) * noise;
+            // float32 g = distribution(generator) * noise;
+            // float32 b = distribution(generator) * noise;
+
+            if (height <= 4*2) {
+                colors[colorCurr++] = 0.0f;
+                colors[colorCurr++] = 1.0f;
+                colors[colorCurr++] = 1.0f;
+            } else {
+                colors[colorCurr++] = 0.0f;
+                colors[colorCurr++] = 1.0f;
+                colors[colorCurr++] = 0.0f;
+            }
+        }
+    }
+}
 
 const uint32 WIDTH = 800;
 const uint32 HEIGHT = 600;
@@ -67,31 +116,8 @@ int main() {
     );
 
     // Create a grid
-    uint16 gridSize = 256;
-    std::vector<float32> grid(gridSize * gridSize * 3);
-    std::vector<float32> colors(gridSize * gridSize * 3);
-
-    uint64 curr = 0;
-    uint64 colorCurr = 0;
-
-    std::default_random_engine generator;
-    generator.seed(std::random_device()());
-    std::uniform_real_distribution<float32> distribution(0, 1);
-
-    for (uint16 i = 0; i < gridSize; i++) {
-        for (uint16 j = 0; j < gridSize; j++) {
-            grid[curr++] = i;
-            grid[curr++] = distribution(generator);
-            grid[curr++] = j;
-
-            // float32 r = distribution(generator);
-            // float32 g = distribution(generator);
-            // float32 b = distribution(generator);
-            colors[colorCurr++] = 1.0f;
-            colors[colorCurr++] = 1.0f;
-            colors[colorCurr++] = 1.0f;
-        }
-    }
+    uint16 gridSize = 128;
+    std::vector<float32> grid, colors;
 
     // Find the indices for the EBO to draw the needed triangles
     std::vector<uint32> indices;
@@ -110,7 +136,7 @@ int main() {
         }
     }
 
-    std::cout << "Num of vertices drawn" << indices.size() << std::endl;
+    std::cout << "Num of vertices drawn: " << indices.size() << std::endl;
     // Tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 
     shaderProgram.use(); // don't forget to activate/use the shader before setting uniforms!
@@ -124,23 +150,6 @@ int main() {
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     glGenBuffers(1, &color_VBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, grid.size()*sizeof(float32), grid.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float32), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint32), indices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ARRAY_BUFFER, color_VBO);
-    glBufferData(GL_ARRAY_BUFFER, colors.size()*sizeof(float32), colors.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float32), (void*)0);
-    glEnableVertexAttribArray(1);
-
 
     float32 deltaTime = 0.0f;
     float32 lastFrame = 0.0f;
@@ -169,7 +178,24 @@ int main() {
         glp::Mat4 model {glp::translate(-25.0f, -5.0f, -50.0f)};
         shaderProgram.setMat4("model", model);
 
+        createGrid(gridSize, grid, colors, currFrame);
+
         glBindVertexArray(VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, grid.size()*sizeof(float32), grid.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float32), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(uint32), indices.data(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, color_VBO);
+        glBufferData(GL_ARRAY_BUFFER, colors.size()*sizeof(float32), colors.data(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float32), (void*)0);
+        glEnableVertexAttribArray(1);
+
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         // Swap buffers and poll IO events
