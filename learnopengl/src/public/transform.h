@@ -46,6 +46,16 @@ Mat4<T> scale(T sx, T sy, T sz) {
 }
 
 template <typename T = float32>
+Mat4<T> scale(T s) {
+    return {
+        {s, 0, 0, 0},
+        {0, s, 0, 0},
+        {0, 0, s, 0},
+        {0, 0, 0, 1}
+    };
+}
+
+template <typename T = float32>
 Mat4<T> scale(const Vec3<T>& s) {
     return {
         {s.x, 0, 0, 0},

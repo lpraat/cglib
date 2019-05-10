@@ -20,7 +20,7 @@ template <typename T>
 class FreeCamera {
 private:
     // TODO add this to constructor/config file
-    const float32 positionSpeed = 50.0f;
+    const float32 positionSpeed = 5.0f;
     const float32 orientationSpeed = 50.0f;
     const bool constrained = true;
 
@@ -35,13 +35,17 @@ private:
 
 public:
     FreeCamera() :
-         orientation{Quat<T> {-360.0f, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
+         orientation{Quat<T> {0.0f, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
     }
 
     Mat4<T> getView() {
         updateOrientation();
         updatePosition();
         return orientation.conjugate().toRotMatrix().dot(translate(-position));
+    }
+
+    Vec3<T> getPosition() const {
+        return position;
     }
 
     void updateDeltaPosition(FreeCameraMovement cameraMovement, float32 deltaTime) {

@@ -20,6 +20,11 @@ struct Vec3 {
 
     Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
 
+    T* getPtr() {
+        return &v[0];
+    }
+
+
     T length() const {
         return std::sqrt(x*x + y*y + z*z);
     }
