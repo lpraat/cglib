@@ -37,7 +37,6 @@ struct Quat {
         return std::sqrt(a*a + b*b + c*c + d*d);
     }
 
-    // Normalize
     Quat<T>& normalize() {
         T l = length();
         a /= l; b /= l; c /= l; d/= l;
@@ -82,7 +81,7 @@ struct Quat {
         };
     }
 
-    Mat4<T> toRotMatrix() {
+    Mat4<T> toRotMatrix() const {
         return {
             {1 - 2*(c*c + d*d), 2*(b*c - a*d), 2*(b*d + a*c), 0},
             {2*(b*c + a*d), 1 - 2*(b*b + d*d), 2*(c*d - a*b), 0},

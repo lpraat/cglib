@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace glp {
+
 template <typename T = float64, typename S = int32>
 class PerlinNoise {
 
@@ -34,7 +36,7 @@ private:
     static T lerp(T t, T a, T b) { return a + t * (b - a); }
 
     static T grad(S hash, T x, T y, T z) {
-        switch(hash & 0xF){
+        switch(hash & 0xF) {
             case 0x0: return  x + y;
             case 0x1: return -x + y;
             case 0x2: return  x - y;
@@ -83,3 +85,5 @@ public:
 
 
 };
+
+}; // namespace glp

@@ -27,7 +27,8 @@ int main() {
     std::cout << "Resulting vector using quat" << std::endl;
     m.print(); std::cout << std::endl;
 
-    auto res2 = extractEulerAngles(q.toRotMatrix());
+    Mat4 ra = q.toRotMatrix();
+    auto res2 = extractEulerAngles(ra);
 
     std::vector<Mat4<float32>> composed2 = {
         rotateZ(res2.z * 180 / pi()),

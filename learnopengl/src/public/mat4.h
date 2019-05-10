@@ -48,7 +48,6 @@ struct Mat4 {
         return &v[0];
     }
 
-    // Scalar matrix addition
     Mat4<T>& operator+=(T s) {
         x0 += s; y0 += s; z0 += s; w0 += s;
         x1 += s; y1 += s; z1 += s; w1 += s;
@@ -75,7 +74,6 @@ struct Mat4 {
         };
     }
 
-    // Scalar matrix subtraction
     Mat4<T>& operator-=(T s) {
         x0 -= s; y0 += s; z0 += s; w0 += s;
         x1 -= s; y1 += s; z1 += s; w1 += s;
@@ -93,7 +91,6 @@ struct Mat4 {
         };
     }
 
-    // Scalar matrix multiplication
     Mat4<T>& operator*=(T s) {
         x0 *= s; y0 *= s; z0 *= s; w0 *= s;
         x1 *= s; y1 *= s; z1 *= s; w1 *= s;
@@ -120,7 +117,6 @@ struct Mat4 {
         };
     }
 
-    // Scalar matrix division
     Mat4<T>& operator/=(T s) {
         x0 /= s; y0 /= s; z0 /= s; w0 /= s;
         x1 /= s; y1 /= s; z1 /= s; w1 /= s;
@@ -138,7 +134,6 @@ struct Mat4 {
         };
     }
 
-    // Matrix matrix addition
     Mat4<T>& operator+=(const Mat4<T>& other) {
         x0 += other.x0; y0 += other.y0; z0 += other.z0; w0 += other.w0;
         x1 += other.x1; y1 += other.y1; z1 += other.z1; w1 += other.w1;
@@ -156,7 +151,6 @@ struct Mat4 {
         };
     }
 
-    // Matrix matrix subtraction
     Mat4<T>& operator-=(const Mat4<T>& other) {
         x0 -= other.x0; y0 -= other.y0; z0 -= other.z0; w0 -= other.w0;
         x1 -= other.x1; y1 -= other.y1; z1 -= other.z1; w1 -= other.w1;
@@ -174,7 +168,6 @@ struct Mat4 {
         };
     }
 
-    // Matrix matrix multiplication
     Mat4<T>& operator*=(const Mat4<T>& other) {
         x0 *= other.x0; y0 *= other.y0; z0 *= other.z0; w0 *= other.w0;
         x1 *= other.x1; y1 *= other.y1; z1 *= other.z1; w1 *= other.w1;
@@ -192,8 +185,6 @@ struct Mat4 {
         };
     }
 
-
-    // Matrix matrix division
     Mat4<T>& operator/=(const Mat4<T>& other) {
         x0 /= other.x0; y0 /= other.y0; z0 /= other.z0; w0 /= other.w0;
         x1 /= other.x1; y1 /= other.y1; z1 /= other.z1; w1 /= other.w1;
@@ -202,7 +193,7 @@ struct Mat4 {
         return *this;
     }
 
-    
+
     Mat4<T>& operator/(const Mat4<T>& other) const {
         return {
             {x0 / other.x0, y0 / other.y0, z0 / other.z0, w0 / other.w0},
@@ -212,7 +203,6 @@ struct Mat4 {
         };
     }
 
-    // Dot product
     Mat4<T> dot(const Mat4<T>& other) const {
         return {
             {

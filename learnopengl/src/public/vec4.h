@@ -21,12 +21,10 @@ struct Vec4 {
 
     Vec4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
 
-    // Length
     T length() const {
         return std::sqrt(x*x + y*y + z*z + w*w);
     }
 
-    // Normalize
     Vec4<T>& normalize() {
         T l = length();
         x /= l; y /= l; z /= l; w /= w;
@@ -42,7 +40,6 @@ struct Vec4 {
         return {-x, -y, -z, -w};
     }
 
-    // Vector scalar addition
     Vec4<T>& operator+=(T s) {
         x += s; y += s; z += s; w += s;
         return *this;
@@ -56,8 +53,6 @@ struct Vec4 {
         return v4 + s;
     }
 
-
-    // Vector scalar subtraction
     Vec4<T>& operator-=(T s) {
         x -= s; y -= s; z -= s; w -= s;
         return *this;
@@ -67,8 +62,6 @@ struct Vec4 {
         return {x - s, y - s, z - s, w - s};
     }
 
-
-    // Vector scalar multiplication
     Vec4<T>& operator*=(T s) {
         x *= s; y *= s; z *= s; w *= s;
         return *this;
@@ -82,7 +75,6 @@ struct Vec4 {
         return v4 * s;
     }
 
-    // Vector scalar division
     Vec4<T>& operator/=(T s) {
         x /= s; y /= s; z /= s; w /= s;
         return *this;
@@ -92,7 +84,6 @@ struct Vec4 {
         return {x / s, y / s, z / s, w / s};
     }
 
-    // Vector vector addition
     Vec4<T>& operator+=(const Vec4<T>& other) {
         x += other.x; y += other.y; z += other.z; w += other.w;
         return *this;
@@ -102,7 +93,6 @@ struct Vec4 {
         return {x + other.x, y + other.y, z + other.z, w + other.w};
     }
 
-    // Vector vector subtraction
     Vec4<T>& operator-=(const Vec4<T>& other) {
         x -= other.x; y -= other.y; z -= other.z; w -= other.w;
         return *this;
@@ -112,8 +102,7 @@ struct Vec4 {
         return {x - other.x, y - other.y, z - other.z, w - other.w};
     }
 
-    // Vector vector multiplication
-    Vec4<T>& operator *=(const Vec4<T>& other) {
+    Vec4<T>& operator*=(const Vec4<T>& other) {
         x *= other.x; y *= other.y; z *= other.z; w *= other.w;
         return *this;
     }
@@ -122,7 +111,6 @@ struct Vec4 {
         return {x * other.x, y * other.y, z * other.z, w * other.w};
     }
 
-    // Vector vector division
     Vec4<T>& operator/=(const Vec4<T>& other) {
         x /= other.x; y /= other.y; z /= other.z; w /= other.w;
         return *this;
@@ -132,7 +120,6 @@ struct Vec4 {
         return {x / other.x, y / other.y, z / other.z, w / other.w};
     }
 
-    // Dot product
     T dot(const Vec4<T>& other) const {
         return x*other.x + y*other.y + z*other.z + w*other.w;
     }
