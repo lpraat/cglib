@@ -5,11 +5,14 @@ layout (location = 2) in vec2 aTexCoord;
 
 out vec3 Normal;
 out vec3 FragPos;
-out vec3 LightPos;
 
+out vec3 SpotPos;
+out vec3 SpotDir;
 out vec2 TexCoord;
 
-uniform vec3 lightPos; // world space light position
+uniform vec3 spotPos;
+uniform vec3 spotDir;
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -20,8 +23,11 @@ void main()
 	gl_Position = projection * modelView * vec4(aPos, 1.0);
     FragPos = vec3(modelView * vec4(aPos, 1.0));
 
-    // Note this is fixed for every vertex so it is better to calculate this once in the cpu
-    LightPos = vec3(view * vec4(lightPos, 1.0)); // view space light position
+    // Generalized version, we don't know where the spotlight is
+    // In case it is at the viewer's position just set SpotPos to 0.0, 0.0, 0.0
+    // and SpotDir(forward) to 0.0, 0.0, 1.0
+    SpotPos = vec3(view * vec4(spotPos, 1.0));
+    SpotDir = vec3(view * vec4(spotDir, 0.0));
 
     // Inversing matrices is a costly operation even for shaders so wherever possible, try to avoid doing inverse
     // operations in shaders since they have to be done on each vertex of your scene.

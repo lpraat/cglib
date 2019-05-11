@@ -29,7 +29,7 @@ void main()
 	gl_Position = projection * modelView * vec4(aPos, 1.0);
 
     vec3 vPos = vec3(modelView * vec4(aPos, 1.0));
-    vec3 LightPos = vec3(modelView * vec4(lightPos, 1.0));
+    vec3 LightPos = vec3(view * vec4(lightPos, 1.0));
 
     // Inversing matrices is a costly operation even for shaders so wherever possible, try to avoid doing inverse
     // operations in shaders since they have to be done on each vertex of your scene.

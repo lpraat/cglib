@@ -71,17 +71,17 @@ int main()
     // glfwSetCursorPosCallback(window, mouse_callback);
 
     ShaderProgram lightingProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/lighting_maps2/shaders/lighting/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/lighting_maps2/shaders/lighting/fragment.glsl"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/light_casters2/shaders/lighting/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/light_casters2/shaders/lighting/fragment.glsl"
     );
 
     ShaderProgram lampProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/lighting_maps2/shaders/lamp/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/lighting_maps2/shaders/lamp/fragment.glsl"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/light_casters2/shaders/lamp/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/light_casters2/shaders/lamp/fragment.glsl"
     );
 
-    uint32 diffuseMap = loadTexture("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/container2.png");
-    uint32 specularMap = loadTexture("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting_maps/container2_specular.png");
+    uint32 diffuseMap = loadTexture("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/container2.png");
+    uint32 specularMap = loadTexture("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/light_casters/container2_specular.png");
 
     std::vector<float32> vertices = {
         // positions          // normals           // texture coords
@@ -126,6 +126,20 @@ int main()
          0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+
+    // positions all containers
+    std::vector<glp::Vec3<float32>> cubePositions = {
+        glp::Vec3( 0.0f,  0.0f,  0.0f),
+        glp::Vec3( 2.0f,  5.0f, -15.0f),
+        glp::Vec3(-1.5f, -2.2f, -2.5f),
+        glp::Vec3(-3.8f, -2.0f, -12.3f),
+        glp::Vec3( 2.4f, -0.4f, -3.5f),
+        glp::Vec3(-1.7f,  3.0f, -7.5f),
+        glp::Vec3( 1.3f, -2.0f, -2.5f),
+        glp::Vec3( 1.5f,  2.0f, -2.5f),
+        glp::Vec3( 1.5f,  0.2f, -1.5f),
+        glp::Vec3(-1.3f,  1.0f, -1.5f)
     };
 
     // cube
@@ -173,16 +187,22 @@ int main()
     lampProgram.setMat4("projection", projection);
 
     // Since the position is static in this case, we can set it out of the loop
-    glp::Vec3 lightPos {1.2f, 1.0f, 2.0f};
+    glp::Vec3 lightPos(1.2f, 1.0f, 2.0f);
     lightingProgram.use();
-    lightingProgram.setVec3("lightPos", lightPos);
     lightingProgram.setInt("material.diffuse", 0);
     lightingProgram.setInt("material.specular", 1);
-    lightingProgram.setFloat("material.shininess", 64.0f);
+    lightingProgram.setFloat("material.shininess", 32.0f);
 
     lightingProgram.setVec3("light.ambient",  {0.2f, 0.2f, 0.2f});
     lightingProgram.setVec3("light.diffuse",  {0.5f, 0.5f, 0.5f}); // darken the light a bit to fit the scene
     lightingProgram.setVec3("light.specular", {1.0f, 1.0f, 1.0f});
+
+    // Taken from http://www.ogre3d.org/tikiwiki/tiki-index.php?page=-Point+Light+Attenuation
+    lightingProgram.setFloat("light.constant",  1.0f);
+    lightingProgram.setFloat("light.linear",    0.09f);
+    lightingProgram.setFloat("light.quadratic", 0.032f);
+
+    lightingProgram.setVec3("lightPos", lightPos);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -208,11 +228,19 @@ int main()
         lightingProgram.use();
         lightingProgram.setMat4("view", newView);
         lightingProgram.setMat4("model", glp::Mat4<float32>::identity());
-
         lightingProgram.setVec3("objectColor", {1.0f, 0.5f, 0.31f});
 
         glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (uint32 i = 0; i < 10; i++) {
+            glp::Mat4 model {glp::translate(cubePositions[i])};
+            float32 angle = -20.0 * i;
+            glp::Vec3 rotAxis {1.0f, 0.3f, 0.5f};
+            glp::Quat q(angle, rotAxis.normalize());
+            model = model.dot(q.toRotMatrix());
+
+            lightingProgram.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // render light
         lampProgram.use();
@@ -220,7 +248,6 @@ int main()
 
         glp::Mat4<float32> model = glp::translate(lightPos).dot(glp::scale({0.2f}));
         lampProgram.setMat4("model", model);
-
         glBindVertexArray(lightingVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 

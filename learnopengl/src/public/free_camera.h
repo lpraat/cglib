@@ -35,7 +35,7 @@ private:
 
 public:
     FreeCamera() :
-         orientation{Quat<T> {0.0f, Vec3<T> {0, 0, 1}}}, position{0, 0, 3} {
+         orientation{Quat<T> {0.0f, Vec3<T> {0, 0, 0}}}, position{0, 0, 3} {
     }
 
     Mat4<T> getView() {
@@ -46,6 +46,11 @@ public:
 
     Vec3<T> getPosition() const {
         return position;
+    }
+
+    Vec3<T> getFrontDirection() const {
+        Quat d = orientation * Quat<T> {0, 0, 0, 1.0f} * orientation.conjugate();
+        return {d.x, d.y, d.z};
     }
 
     void updateDeltaPosition(FreeCameraMovement cameraMovement, float32 deltaTime) {
