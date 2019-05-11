@@ -195,7 +195,7 @@ int main()
         glp::Mat4<float32> model = glp::translate(lightPos).dot(glp::scale({0.2f}));
         lampProgram.setMat4("model", model);
 
-        glBindVertexArray(cubeVAO);
+        glBindVertexArray(lightingVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Swap buffers and poll IO events
