@@ -13,6 +13,7 @@
 #include "free_camera.h"
 #include "noise.h"
 #include "perlin.h"
+#include <cmath>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 deltaTime);
@@ -66,13 +67,14 @@ int main()
     // glfwSetCursorPosCallback(window, mouse_callback);
 
     ShaderProgram lightingProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting3/shaders/lighting/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting3/shaders/lighting/fragment.glsl");
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting_ex2/shaders/lighting/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting_ex2/shaders/lighting/fragment.glsl"
+    );
 
     ShaderProgram lampProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting3/shaders/lamp/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting3/shaders/lamp/fragment.glsl");
-
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting_ex2/shaders/lamp/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting_ex2/shaders/lamp/fragment.glsl"
+    );
     std::vector<float32> vertices = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
@@ -155,9 +157,8 @@ int main()
     lampProgram.setMat4("projection", projection);
 
     // Since the position is static in this case, we can set it out of the loop
-    glp::Vec3 lightPos{1.2f, 1.0f, 2.0f};
+    glp::Vec3 lightPos{1.0f, 0.0f, 0.0f};
     lightingProgram.use();
-    lightingProgram.setVec3("lightPos", lightPos);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -178,9 +179,11 @@ int main()
         lightingProgram.setMat4("view", newView);
         lightingProgram.setMat4("model", glp::Mat4<float32>::identity());
 
-        lightingProgram.setVec3("viewPos", camera.getPosition());
         lightingProgram.setVec3("objectColor", {1.0f, 0.5f, 0.31f});
         lightingProgram.setVec3("lightColor", {1.0f, 1.0f, 1.0f});
+
+        lightPos = {std::cos(currFrame), 0.0f, std::sin(currFrame)};
+        lightingProgram.setVec3("lightPos", lightPos);
 
         glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);

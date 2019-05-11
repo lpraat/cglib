@@ -63,13 +63,13 @@ int main() {
     // glfwSetCursorPosCallback(window, mouse_callback);
 
     ShaderProgram lightingProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting1/shaders/lighting/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting1/shaders/lighting/fragment.glsl"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting1/shaders/lighting/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting1/shaders/lighting/fragment.glsl"
     );
 
     ShaderProgram lampProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting1/shaders/lamp/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting1/shaders/lamp/fragment.glsl"
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting1/shaders/lamp/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting1/shaders/lamp/fragment.glsl"
     );
 
     std::vector<float32> vertices = {

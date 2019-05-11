@@ -66,13 +66,14 @@ int main()
     // glfwSetCursorPosCallback(window, mouse_callback);
 
     ShaderProgram lightingProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting2/shaders/lighting/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting2/shaders/lighting/fragment.glsl");
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting3/shaders/lighting/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting3/shaders/lighting/fragment.glsl"
+    );
 
     ShaderProgram lampProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting2/shaders/lamp/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/lighting/lighting2/shaders/lamp/fragment.glsl");
-
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting3/shaders/lamp/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/basic_lighting/basic_lighting3/shaders/lamp/fragment.glsl"
+    );
     std::vector<float32> vertices = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
@@ -178,6 +179,7 @@ int main()
         lightingProgram.setMat4("view", newView);
         lightingProgram.setMat4("model", glp::Mat4<float32>::identity());
 
+        lightingProgram.setVec3("viewPos", camera.getPosition());
         lightingProgram.setVec3("objectColor", {1.0f, 0.5f, 0.31f});
         lightingProgram.setVec3("lightColor", {1.0f, 1.0f, 1.0f});
 
