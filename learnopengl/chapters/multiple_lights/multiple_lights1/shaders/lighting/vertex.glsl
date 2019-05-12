@@ -50,6 +50,6 @@ void main()
     // For learning purposes this is fine, but for an efficient application you'll likely want to
     // calculate the normal matrix on the CPU and send it to the shaders via a uniform before drawing
     // (just like the model matrix).
-    Normal = mat3(transpose(inverse(modelView))) * aNormal;
+    Normal = transpose(inverse(mat3(modelView))) * aNormal;
     TexCoord = aTexCoord;
 }

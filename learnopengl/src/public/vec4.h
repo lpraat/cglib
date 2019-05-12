@@ -26,13 +26,13 @@ struct Vec4 {
     }
 
     Vec4<T>& normalize() {
-        T l = length();
+        const T l = length();
         x /= l; y /= l; z /= l; w /= w;
         return *this;
     }
 
     Vec4<T> normalized() {
-        T l = length();
+        const T l = length();
         return {x / l, y / l, z / l, w / l};
     }
 

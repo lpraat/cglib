@@ -1,4 +1,4 @@
-#pragma once
+git#pragma once
 
 #include "vec3.h"
 #include "mat4.h"
@@ -49,12 +49,12 @@ public:
     }
 
     Vec3<T> getFrontDirection() const {
-        Quat d = orientation * Quat<T> {0, 0, 0, 1.0f} * orientation.conjugate();
+        const Quat d = orientation * Quat<T> {0, 0, 0, 1.0f} * orientation.conjugate();
         return {d.x, d.y, d.z};
     }
 
     void updateDeltaPosition(FreeCameraMovement cameraMovement, float32 deltaTime) {
-        float32 delta = deltaTime * positionSpeed;
+        const float32 delta = deltaTime * positionSpeed;
 
         switch (cameraMovement)
         {
@@ -88,7 +88,7 @@ public:
     }
 
     void updateDeltaOrientation(FreeCameraMovement cameraMovement, float32 deltaTime) {
-        float32 delta = deltaTime * orientationSpeed;
+        const float32 delta = deltaTime * orientationSpeed;
 
         switch (cameraMovement)
         {
@@ -124,9 +124,9 @@ public:
 
     void updateOrientation() {
         if (orientationNeedsUpdate) {
-            Quat<T> qRoll {roll, {0, 0, 1}};
-            Quat<T> qPitch {pitch, {1, 0, 0}};
-            Quat<T> qYaw {yaw, {0, 1, 0}};
+            const Quat<T> qRoll {roll, {0, 0, 1}};
+            const Quat<T> qPitch {pitch, {1, 0, 0}};
+            const Quat<T> qYaw {yaw, {0, 1, 0}};
 
             orientation *= (qYaw * qPitch * qRoll);
             orientation.normalize();
@@ -138,7 +138,7 @@ public:
 
     void updatePosition() {
         if (positionNeedsUpdate) {
-            Quat<T> deltaPos = orientation * Quat<T> {0, deltaRight, deltaUp, deltaForward} * orientation.conjugate();
+            const Quat<T> deltaPos = orientation * Quat<T> {0, deltaRight, deltaUp, deltaForward} * orientation.conjugate();
             position += {deltaPos.x, deltaPos.y, deltaPos.z};
 
             deltaForward = 0, deltaUp = 0, deltaRight = 0;

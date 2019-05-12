@@ -44,15 +44,15 @@ public:
     }
 
     void updatePosition(FPSCameraMovement cameraMovement, float32 deltaTime) {
-        float32 delta = deltaTime * speed;
+        const float32 delta = deltaTime * speed;
 
-        Quat<T> frontQuaternion = orientation * front * orientation.conjugate();
+        const Quat<T> frontQuaternion = orientation * front * orientation.conjugate();
 
         // To have a true fps camera()
-        // Vec3<T> front {frontQuaternion.x, 0, frontQuaterion.z}
+        // Vec3<T> front {frontQuaternion.x, 0, frontQuaterion.z};
 
-        Vec3<T> front {frontQuaternion.x, frontQuaternion.y, frontQuaternion.z};
-        Vec3<T> right {up.cross(front).normalize()};
+        const Vec3<T> front {frontQuaternion.x, frontQuaternion.y, frontQuaternion.z};
+        const Vec3<T> right {up.cross(front).normalize()};
 
         switch (cameraMovement)
         {
@@ -93,8 +93,8 @@ public:
             }
         }
 
-        Quat<T> qYaw {-yaw, {0, 1, 0}};
-        Quat<T> qPitch {pitch, {1, 0, 0}};
+        const Quat<T> qYaw {-yaw, {0, 1, 0}};
+        const Quat<T> qPitch {pitch, {1, 0, 0}};
 
         orientation = qYaw * qPitch;
     }

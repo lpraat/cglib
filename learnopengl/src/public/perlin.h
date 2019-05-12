@@ -60,9 +60,9 @@ private:
 public:
 
     static T noise(T x, T y, T z) {
-        S xi = static_cast<S>(std::floor(x)) & 255;
-        S yi = static_cast<S>(std::floor(y)) & 255;
-        S zi = static_cast<S>(std::floor(z)) & 255;
+        const S xi = static_cast<S>(std::floor(x)) & 255;
+        const S yi = static_cast<S>(std::floor(y)) & 255;
+        const S zi = static_cast<S>(std::floor(z)) & 255;
 
         x -= std::floor(x);
         y -= std::floor(y);

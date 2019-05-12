@@ -30,13 +30,13 @@ struct Vec3 {
     }
 
     Vec3<T>& normalize() {
-        T l = length();
+        const T l = length();
         x /= l; y /= l; z /= l;
         return *this;
     }
 
     Vec3<T> normalized() {
-        T l = length();
+        const T l = length();
         return {x / l, y / l, z / l};
     }
 

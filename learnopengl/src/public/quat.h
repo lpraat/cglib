@@ -24,8 +24,8 @@ struct Quat {
     Quat(T a, T b, T c, T d) : a(a), b(b), c(c), d(d) {}
 
     Quat(T theta, const Vec3<T>& normalizedAxis) {
-        T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
-        T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
+        const T cosThetaHalved = std::cos((theta * toRadians<T>()) / 2);
+        const T sinThetaHalved = std::sin((theta * toRadians<T>()) / 2);
 
         a = cosThetaHalved;
         b = sinThetaHalved * normalizedAxis.x;
@@ -38,7 +38,7 @@ struct Quat {
     }
 
     Quat<T>& normalize() {
-        T l = length();
+        const T l = length();
         a /= l; b /= l; c /= l; d/= l;
         return *this;
     }

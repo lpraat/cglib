@@ -246,8 +246,8 @@ int main()
     lightingProgram.setFloat("spotLight.constant", 1.0f);
     lightingProgram.setFloat("spotLight.linear", 0.09);
     lightingProgram.setFloat("spotLight.quadratic", 0.032);
-    lightingProgram.setFloat("spotLight.cutOff", std::cos(12.5f * toRadians()));
-    lightingProgram.setFloat("spotLight.outerCutOff", std::cos(15.0f * toRadians()));
+    lightingProgram.setFloat("spotLight.cutOff", std::cos(12.5f * glp::toRadians()));
+    lightingProgram.setFloat("spotLight.outerCutOff", std::cos(15.0f * glp::toRadians()));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, diffuseMap);
