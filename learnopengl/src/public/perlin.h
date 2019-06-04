@@ -8,7 +8,7 @@ namespace glp {
 
 template <typename T = float64, typename S = int32>
 class PerlinNoise {
-
+// Improved perlin noise implementation: https://mrl.nyu.edu/~perlin/noise/
 public:
 
 private:
@@ -82,7 +82,6 @@ public:
                                lerp(u, grad(p[ab+1], x, y-1, z-1),
                                        grad(p[bb+1], x-1, y-1, z-1))));
     }
-
 
 };
 

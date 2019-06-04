@@ -9,4 +9,3 @@ function perspective() {
 
 	return out;
 }
-
