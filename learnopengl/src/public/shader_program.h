@@ -1,5 +1,4 @@
 #pragma once
-
 #include <glad/glad.h>
 
 #include "core_types.h"
@@ -10,6 +9,8 @@
 
 #include <iostream>
 #include "mat4.h"
+
+namespace glp {
 
 class ShaderProgram {
 private:
@@ -118,20 +119,22 @@ public:
         glUniform1f(glGetUniformLocation(id, name.c_str()), value);
     }
 
-    void setMat4(const std::string& name, glp::Mat4<float32>& m4) const {
+    void setMat4(const std::string& name, Mat4<float32>& m4) const {
         glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_TRUE, m4.getPtr());
     }
 
-    void setMat4(const std::string& name, glp::Mat4<float32>&& m4) const {
+    void setMat4(const std::string& name, Mat4<float32>&& m4) const {
         glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_TRUE, m4.getPtr());
     }
 
-    void setVec3(const std::string& name, glp::Vec3<float32>& v3) const {
+    void setVec3(const std::string& name, Vec3<float32>& v3) const {
         glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, v3.getPtr());
     }
 
-    void setVec3(const std::string& name, glp::Vec3<float32>&& v3) const {
+    void setVec3(const std::string& name, Vec3<float32>&& v3) const {
         glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, v3.getPtr());
     }
 
 };
+
+}; // namespace glp

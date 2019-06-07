@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core_types.h"
-#include <initializer_list>
 #include <iostream>
 #include <cmath>
 
@@ -18,6 +17,7 @@ struct Vec3 {
         T v[3];
     };
 
+    Vec3() {}
     Vec3(T x, T y, T z) : x(x), y(y), z(z) {}
 
     T* getPtr() {
