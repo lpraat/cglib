@@ -1,14 +1,13 @@
 #pragma once
 
 #include <glad/glad.h>
-
-#include <stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <mesh.h>
 #include <shader_program.h>
+#include "texture.h"
 
 #include <string>
 #include <fstream>
@@ -16,18 +15,21 @@
 #include <iostream>
 #include <vector>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-using namespace std;
-
 namespace glp {
+
+template <typename T = float32>
+struct Node {
+    std::string name;
+    std::vector<Mesh<T>> meshes;
+    std::vector<Node<T>*> children;
+    Mat4<T> model = Mat4<T>::identity();
+};
 
 template <typename T = float32>
 class Model
 {
 private:
-    std::vector<Mesh<T>> meshes;
+    std::vector<Node<T>> nodes;
     std::string directory;
     bool gammaCorrection;
 
@@ -38,10 +40,13 @@ public:
     }
 
     // Draw all the model's meshes
-    void draw(ShaderProgram shaderProgram)
+    void draw(const ShaderProgram& shaderProgram)
     {
-        for(uint32 i = 0; i < meshes.size(); i++)
-            meshes[i].draw(shaderProgram);
+        for (uint32 i = 0; i < nodes.size(); i++) {
+            for(uint32 j = 0; j < nodes[i].meshes.size(); j++) {
+                nodes[i].meshes[j].draw(shaderProgram);
+            }
+        }
     }
 
     // Loads a support assimp extension from file.
@@ -54,38 +59,47 @@ public:
         // Check for errors
         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
-            cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+            std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
             return;
         }
 
         directory = path.substr(0, path.find_last_of('/'));
 
         // Process assimp's tree data structure
-        processNode(scene->mRootNode, scene);
+        processNode(scene->mRootNode, scene, nullptr);
     }
 
-    void processNode(aiNode *node, const aiScene *scene)
+    void processNode(aiNode *node, const aiScene *scene, Node<T>* parent)
     {
+        Node<T> newNode;
+        newNode.name = node->mName.C_Str();
+
         // Process each mesh at this node
         for (uint32 i = 0; i < node->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            meshes.push_back(processMesh(mesh, scene));
+            newNode.meshes.push_back(processMesh(mesh, scene));
+        }
+
+        nodes.push_back(newNode);
+
+        if (parent != nullptr) {
+            parent->children.push_back(&nodes[nodes.size()-1]);
         }
 
         // Process all the children of this node
         for(uint32 i = 0; i < node->mNumChildren; i++)
         {
-            processNode(node->mChildren[i], scene);
+            processNode(node->mChildren[i], scene, &nodes[nodes.size()-1]);
         }
 
     }
 
     Mesh<T> processMesh(aiMesh *mesh, const aiScene *scene)
     {
-        vector<Vertex<T>> vertices;
-        vector<uint32> indices;
-        vector<Texture> textures;
+        std::vector<Vertex<T>> vertices;
+        std::vector<uint32> indices;
+        std::vector<Texture> textures;
 
         for(uint32 i = 0; i < mesh->mNumVertices; i++)
         {
@@ -149,14 +163,14 @@ public:
         // diffuse: texture_diffuseN
         // specular: texture_specularN
         // normal: texture_normalN
-        vector<Texture> alreadyLoaded;
+        std::vector<Texture> alreadyLoaded;
 
         // Diffuse maps
-        vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", alreadyLoaded);
+        std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", alreadyLoaded);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
         // Specular maps
-        vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", alreadyLoaded);
+        std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", alreadyLoaded);
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
         // Normal maps
@@ -172,9 +186,9 @@ public:
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
-    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, std::vector<Texture>& alreadyLoaded)
+    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::vector<Texture>& alreadyLoaded)
     {
-        vector<Texture> textures;
+        std::vector<Texture> textures;
         for (uint32 i = 0; i < mat->GetTextureCount(type); i++)
         {
             aiString str;
@@ -193,61 +207,29 @@ public:
             if (!skip)
             {   // if texture hasn't been loaded already, load it
                 Texture texture;
-                texture.id = textureFromFile(str.C_Str(), this->directory);
+                std::string texturePath = this->directory + '/' + str.C_Str();
+                texture.id = textureFromFile(texturePath);
                 texture.type = typeName;
                 texture.path = str.C_Str();
                 textures.push_back(texture);
-                alreadyLoaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+                alreadyLoaded.push_back(texture);
             }
         }
         return textures;
     }
 
-    uint32 textureFromFile(const char *path, const string &directory, bool gamma = false)
-    {
-        string filename = string(path);
-        filename = directory + '/' + filename;
-
-        uint32 textureID;
-        glGenTextures(1, &textureID);
-
-        int32 width, height, nrComponents;
-        ubyte *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-        if (data)
-        {
-            GLenum format;
-            if (nrComponents == 1)
-                format = GL_RED;
-            else if (nrComponents == 3)
-                format = GL_RGB;
-            else if (nrComponents == 4)
-                format = GL_RGBA;
-
-            glBindTexture(GL_TEXTURE_2D, textureID);
-            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            stbi_image_free(data);
-        }
-        else
-        {
-            std::cout << "Texture failed to load at path: " << path << std::endl;
-            stbi_image_free(data);
-        }
-
-        return textureID;
+    std::vector<Node<T>>& getNodes() {
+        return nodes;
     }
 
-    // TODO
     void print() {
         std::cout << "Model name: " << directory << std::endl;
-        for (uint32 i = 0; i < meshes.size(); i++) {
-            meshes[i].print();
+        for (uint32 i = 0; i < nodes.size(); i++) {
+            std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+            std::cout << "Node: " << nodes[i].name << std::endl;
+            for (uint32 j = 0; j < nodes[i].meshes.size(); j++) {
+                nodes[i].meshes[j].print();
+            }
         }
     }
 };

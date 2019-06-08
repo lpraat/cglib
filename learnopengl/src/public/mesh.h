@@ -6,6 +6,7 @@
 #include "vec3.h"
 #include "vec2.h"
 #include "core_types.h"
+#include "texture.h"
 
 #include <string>
 #include <fstream>
@@ -28,28 +29,22 @@ struct Texture {
     uint32 id;
     std::string type;
     std::string path;
-
-    void print() {
-        std::cout << "Texture" << std::endl;
-        std::cout << "Type: " << type <<std::endl;
-        std::cout << "Filename: " << path << std::endl;
-    }
 };
 
 template <typename T = float32>
 class Mesh {
-private:
+public:
     uint32 VAO, VBO, EBO;
     std::vector<Vertex<T>> vertices;
     std::vector<uint32> indices;
     std::vector<Texture> textures;
 
-    Mesh<T>* parent;
+    Mesh<T>* parent = nullptr;
     std::string name;
 
 public:
 
-    Mesh(const char* name, std::vector<Vertex<T>> vertices, std::vector<uint32> indices, std::vector<Texture> textures)
+    Mesh(std::string name, std::vector<Vertex<T>> vertices, std::vector<uint32> indices, std::vector<Texture> textures)
     :
     name(name), vertices{vertices}, indices{indices}, textures{textures}
     {
@@ -57,7 +52,6 @@ public:
     }
 
     ~Mesh() {
-        // TODO
         // glDeleteVertexArrays(1, &VAO);
         // glDeleteBuffers(1, &VBO);
         // glDeleteBuffers(1, &EBO);
@@ -104,15 +98,28 @@ public:
     }
 
     /**
+     * Add a texture. Can be used to add textures after model loading.
+     */
+    void addTexture(const std::string& type, const std::string& path) {
+        Texture texture {
+            textureFromFile(path),
+            type,
+            path.substr(path.find_last_of('/')+1, path.size())
+        };
+        textures.push_back(texture);
+    }
+
+    /**
      * Draw the mesh
      */
-    void draw(ShaderProgram shaderProgram)
+    void draw(const ShaderProgram& shaderProgram)
     {
         // Bind textures
         uint32 diffuseNr  = 1;
         uint32 specularNr = 1;
         uint32 normalNr   = 1;
         uint32 heightNr   = 1;
+
         for(uint32 i = 0; i < textures.size(); i++)
         {
             glActiveTexture(GL_TEXTURE0 + i);
@@ -128,8 +135,8 @@ public:
 			    number = std::to_string(heightNr++);
 
             // Set 2d sampler to corresponding texture unit
-            //shaderProgram.setInt((name + number).c_str(), i);
-            glUniform1i(glGetUniformLocation(shaderProgram.getId(), (name + number).c_str()), i);
+            shaderProgram.setInt((name + number).c_str(), i);
+            // glUniform1i(glGetUniformLocation(shaderProgram.getId(), (name + number).c_str()), i);
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
 
@@ -152,6 +159,7 @@ public:
         std::cout << "Vertices: " << vertices.size() << " ";
         std::cout << "Indices: " << indices.size() << std::endl;
 
+        std::cout << "Texture size " << textures.size() << std::endl;
         for (uint32 i = 0; i < textures.size(); i++) {
             if (i == 0) {
                 std::cout << "Textures: " << std::endl;

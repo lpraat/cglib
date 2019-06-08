@@ -74,11 +74,10 @@ int main()
     // glfwSetCursorPosCallback(window, mouse_callback);
 
     glp::ShaderProgram shaderProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/model_loading/model_loading/shaders/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/model_loading/model_loading/shaders/fragment.glsl");
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/model_loading/model_loading1/shaders/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/model_loading/model_loading1/shaders/fragment.glsl");
 
-    glp::Model nano("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/nanosuit/nanosuit.obj");
-    nano.print();
+    glp::Model nano("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/drone/quadcopter.obj");
 
     // Use z-buffer
     glEnable(GL_DEPTH_TEST);
