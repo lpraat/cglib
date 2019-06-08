@@ -120,6 +120,7 @@ public:
         uint32 normalNr   = 1;
         uint32 heightNr   = 1;
 
+        shaderProgram.use();
         for(uint32 i = 0; i < textures.size(); i++)
         {
             glActiveTexture(GL_TEXTURE0 + i);
