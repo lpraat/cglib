@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <iostream>
 #include "vec4.h"
+#include "mat3.h"
 
 namespace glp {
 
@@ -229,6 +230,14 @@ struct Mat4 {
                 x3*other.z0 + y3*other.z1 + z3*other.z2 + w3*other.z3,
                 x3*other.w0 + y3*other.w1 + z3*other.w2 + w3*other.w3
             }
+        };
+    }
+
+    Mat3<T> mat3() const {
+        return {
+            {x0, y0, z0},
+            {x1, y1, z1},
+            {x2, y2, z2}
         };
     }
 

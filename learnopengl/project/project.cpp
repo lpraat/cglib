@@ -22,9 +22,11 @@
 #include "cubemap.h"
 #include <string>
 
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 deltaTime);
@@ -84,12 +86,13 @@ int main()
     );
 
     glp::ShaderProgram shaderProgram(
-        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/nanosuit/vertex.glsl",
-        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/nanosuit/fragment.glsl");
+        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/terrain/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/terrain/fragment.glsl");
 
 
     glp::Model terrain("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/terrain.obj");
     terrain.getNodes()[1].meshes[0].addTexture("texture_diffuse", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/diff2.jpg");
+    terrain.getNodes()[1].meshes[0].addTexture("texture_normal", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/nrm.png");
     terrain.print();
 
     //glp::Model nano("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/nanosuit/nanosuit.obj");
@@ -112,7 +115,7 @@ int main()
         {0.05f, 0.05f, 0.05f},
         {0.4f, 0.4f, 0.4f},
         {0.5f, 0.5f, 0.5f},
-        {0.5f, -1.0f, 0.8f}
+        {0.5f, -0.8f, 0.8f}
     };
 
     glp::SpotLight<float32> spotLight {
@@ -137,7 +140,6 @@ int main()
     shaderProgram.setVec3("dirLight.ambient", directionalLight.ambient);
     shaderProgram.setVec3("dirLight.diffuse", directionalLight.diffuse);
     shaderProgram.setVec3("dirLight.specular", directionalLight.specular);
-
 
     // Spotlight
     shaderProgram.setVec3("spotLight.ambient", spotLight.ambient);
@@ -193,8 +195,11 @@ int main()
 
         shaderProgram.setMat4("view", newView);
 
-        glp::Mat4<float32> model = glp::translate(0.0f, -1.75f, 0.0f);
+        glp::Mat4<float32> model = glp::translate(0.0f, -0.75f, 0.0f);
         shaderProgram.setMat4("model", model);
+
+        shaderProgram.setMat3("normalMatrix", model.mat3().transposedInverse());
+
         terrain.draw(shaderProgram);
 
         skyboxProgram.use();
