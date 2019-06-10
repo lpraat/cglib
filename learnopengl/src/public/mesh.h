@@ -6,7 +6,11 @@
 #include "vec3.h"
 #include "vec2.h"
 #include "core_types.h"
+#include "utils.h"
+
+#include "vertex.h"
 #include "texture.h"
+#include "node.h"
 
 #include <string>
 #include <fstream>
@@ -15,22 +19,6 @@
 #include <vector>
 
 namespace glp {
-
-template <typename T = float32>
-struct Vertex {
-    Vec3<T> Position;
-    Vec3<T> Normal;
-    Vec2<T> TexCoords;
-    Vec3<T> Tangent;
-    Vec3<T> Bitangent;
-};
-
-struct Texture {
-    uint32 id;
-    std::string type;
-    std::string path;
-};
-
 template <typename T = float32>
 class Mesh {
 public:
@@ -39,14 +27,15 @@ public:
     std::vector<uint32> indices;
     std::vector<Texture> textures;
 
+    Node<T>* node;
     Mesh<T>* parent = nullptr;
     std::string name;
 
 public:
 
-    Mesh(std::string name, std::vector<Vertex<T>> vertices, std::vector<uint32> indices, std::vector<Texture> textures)
+    Mesh(Node<T>* node, std::string name, std::vector<Vertex<T>> vertices, std::vector<uint32> indices, std::vector<Texture> textures)
     :
-    name(name), vertices{vertices}, indices{indices}, textures{textures}
+    node(node), name(name), vertices{vertices}, indices{indices}, textures{textures}
     {
         setupMesh();
     }
@@ -100,7 +89,7 @@ public:
     /**
      * Add a texture. Can be used to add textures after model loading.
      */
-    void addTexture(const std::string& type, const std::string& path) {
+    void addTexture(const std::string& type, std::string path) {
         Texture texture {
             textureFromFile(path),
             type,
@@ -137,9 +126,12 @@ public:
 
             // Set 2d sampler to corresponding texture unit
             shaderProgram.setInt((name + number).c_str(), i);
-            // glUniform1i(glGetUniformLocation(shaderProgram.getId(), (name + number).c_str()), i);
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
+
+        // Set model
+        shaderProgram.setMat4("model", node->model);
+        shaderProgram.setMat3("normalMatrix", node->model.mat3().transposedInverse());
 
         // Draw mesh
         glBindVertexArray(VAO);

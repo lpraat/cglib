@@ -7,7 +7,7 @@
 
 #include <mesh.h>
 #include <shader_program.h>
-#include "texture.h"
+#include "utils.h"
 
 #include <string>
 #include <fstream>
@@ -16,14 +16,6 @@
 #include <vector>
 
 namespace glp {
-
-template <typename T = float32>
-struct Node {
-    std::string name;
-    std::vector<Mesh<T>> meshes;
-    std::vector<Node<T>*> children;
-    Mat4<T> model = Mat4<T>::identity();
-};
 
 template <typename T = float32>
 class Model
@@ -49,6 +41,25 @@ public:
         }
     }
 
+    void _updateModelMatrices(Node<T>* root, Mat4<T> curr) {
+        Mat4<T> model = curr.dot(root->model);
+        root->model = model;
+
+        for (uint32 i = 0; i < root->children.size(); i++) {
+            _updateModelMatrices(root->children[i], model);
+        }
+    }
+
+    void updateModelMatrices() {
+        _updateModelMatrices(&nodes[0], Mat4<T>::identity());
+    }
+
+    void resetModelMatrices() {
+        for (uint32 i = 0; i < nodes.size(); i++) {
+            nodes[i].model = Mat4<T>::identity();
+        }
+    }
+
     // Loads a support assimp extension from file.
     void loadModel(std::string const &path)
     {
@@ -65,37 +76,51 @@ public:
 
         directory = path.substr(0, path.find_last_of('/'));
 
-        // Process assimp's tree data structure
-        processNode(scene->mRootNode, scene, nullptr);
+        // Count how many nodes are present
+        uint32 numNodes = 0;
+        countNodes(scene->mRootNode, &numNodes);
+
+        // Process assimp data structure
+        nodes = std::vector<Node<T>>(numNodes);
+        uint32 idx = 0;
+        processNode(scene->mRootNode, scene, nullptr, &idx);
     }
 
-    void processNode(aiNode *node, const aiScene *scene, Node<T>* parent)
+    void countNodes(aiNode *node, uint32* numNodes) {
+        (*numNodes)++;
+
+        for(uint32 i = 0; i < node->mNumChildren; i++)
+        {
+            countNodes(node->mChildren[i], numNodes);
+        }
+    }
+
+    void processNode(aiNode *node, const aiScene *scene, Node<T>* parent, uint32* nodeIndex)
     {
-        Node<T> newNode;
-        newNode.name = node->mName.C_Str();
+        Node<T>* newNode = &(nodes[*nodeIndex]);
+        (*nodeIndex)++;
+
+        newNode->name = node->mName.C_Str();
 
         // Process each mesh at this node
         for (uint32 i = 0; i < node->mNumMeshes; i++)
         {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            newNode.meshes.push_back(processMesh(mesh, scene));
+            newNode->meshes.push_back(processMesh(newNode, mesh, scene));
         }
 
-        nodes.push_back(newNode);
-
         if (parent != nullptr) {
-            parent->children.push_back(&nodes[nodes.size()-1]);
+            parent->children.push_back(newNode);
         }
 
         // Process all the children of this node
         for(uint32 i = 0; i < node->mNumChildren; i++)
         {
-            processNode(node->mChildren[i], scene, &nodes[nodes.size()-1]);
+            processNode(node->mChildren[i], scene, newNode, nodeIndex);
         }
-
     }
 
-    Mesh<T> processMesh(aiMesh *mesh, const aiScene *scene)
+    Mesh<T> processMesh(Node<T>* node, aiMesh *mesh, const aiScene *scene)
     {
         std::vector<Vertex<T>> vertices;
         std::vector<uint32> indices;
@@ -144,6 +169,7 @@ public:
             vector.z = mesh->mBitangents[i].z;
             vertex.Bitangent = vector;
 
+
             vertices.push_back(vertex);
         }
 
@@ -181,7 +207,7 @@ public:
         std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", alreadyLoaded);
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
-        return Mesh<T>(mesh->mName.C_Str(), vertices, indices, textures);
+        return Mesh<T>(node, mesh->mName.C_Str(), vertices, indices, textures);
     }
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -211,6 +237,8 @@ public:
                 texture.id = textureFromFile(texturePath);
                 texture.type = typeName;
                 texture.path = str.C_Str();
+                std::cout << texture.type << std::endl;
+                std::cout << texture.path << std::endl;
                 textures.push_back(texture);
                 alreadyLoaded.push_back(texture);
             }

@@ -15,7 +15,6 @@
 #include "perlin.h"
 #include <cmath>
 #include "constants.h"
-#include "mesh.h"
 #include "model.h"
 #include "lights/directional.h"
 #include "lights/spot.h"
