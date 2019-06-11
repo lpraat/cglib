@@ -8,7 +8,6 @@ namespace glp {
 
 class CubeMap {
    static constexpr float vertices[] = {
-        // positions
         -1.0f,  1.0f, -1.0f,
         -1.0f, -1.0f, -1.0f,
          1.0f, -1.0f, -1.0f,

@@ -73,9 +73,9 @@ private:
     Model<T>& terrain;
     uint32 VBO, VAO;
 
-    uint32 WIDTH = 1001;
-    uint32 HEIGHT = 1001;
-    uint32 MIN_HEIGHT = 35;
+    const uint32 WIDTH = 1001;
+    const uint32 HEIGHT = 1001;
+    const uint32 MIN_HEIGHT = 15;
 
     std::vector<std::vector<T>> height;
 
@@ -129,7 +129,7 @@ public:
         glBindVertexArray(0);
     }
 
-    bool hasCollided(const Vec3<T>& dronePosition, T scale) {
+    bool hasCollided(const Vec3<T>& dronePosition, const T scale) {
         std::vector<T> bounds = BoundingBox<T>::getUpdatedBounds(dronePosition, scale);
         int32 xMin = std::floor(bounds[0]);
         int32 xMax = std::floor(bounds[1]);
@@ -141,8 +141,8 @@ public:
 
         if (!inside) return false;
 
-        for (int32 i = xMin; i < xMax; i++) {
-            for (int32 j = zMin; j < zMax; j++) {
+        for (int32 i = xMin; i <= xMax; i++) {
+            for (int32 j = zMin; j <= zMax; j++) {
                 if (height[i][j] >= yMin) {
                     return true;
                 }

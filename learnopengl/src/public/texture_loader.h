@@ -15,7 +15,10 @@
 
 namespace glp {
 
-    std::string fixPath(std::string toFix) {
+class TextureLoader {
+
+private:
+    static std::string fixPath(const std::string& toFix) {
         std::vector<char> fixed;
 
         bool firstFound = false;
@@ -33,7 +36,9 @@ namespace glp {
         return std::string(fixed.data());
     }
 
-    uint32 textureFromFile(std::string& path, bool gamma = false)
+public:
+
+    static uint32 textureFromFile(std::string& path)
     {
         uint32 textureID;
         glGenTextures(1, &textureID);
@@ -71,4 +76,6 @@ namespace glp {
 
         return textureID;
     }
-}
+};
+
+}; // namespace glp

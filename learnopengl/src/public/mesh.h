@@ -6,11 +6,12 @@
 #include "vec3.h"
 #include "vec2.h"
 #include "core_types.h"
-#include "utils.h"
+#include "texture_loader.h"
 
 #include "vertex.h"
 #include "texture.h"
 #include "node.h"
+#include "model.h"
 
 #include <string>
 #include <fstream>
@@ -41,6 +42,7 @@ public:
     }
 
     ~Mesh() {
+        // TODO
         // glDeleteVertexArrays(1, &VAO);
         // glDeleteBuffers(1, &VBO);
         // glDeleteBuffers(1, &EBO);
@@ -49,8 +51,7 @@ public:
     /**
      * Setup vertex buffers
      */
-    void setupMesh()
-    {
+    void setupMesh() {
         // Create buffers
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -91,7 +92,7 @@ public:
      */
     void addTexture(const std::string& type, std::string path) {
         Texture texture {
-            textureFromFile(path),
+            TextureLoader::textureFromFile(path),
             type,
             path.substr(path.find_last_of('/')+1, path.size())
         };
@@ -101,8 +102,7 @@ public:
     /**
      * Draw the mesh
      */
-    void draw(const ShaderProgram& shaderProgram)
-    {
+    void draw(const ShaderProgram& shaderProgram, const Mat4<T>& projection, const Mat4<T>& view) const {
         // Bind textures
         uint32 diffuseNr  = 1;
         uint32 specularNr = 1;
@@ -132,6 +132,7 @@ public:
         // Set model
         shaderProgram.setMat4("model", node->model);
         shaderProgram.setMat3("normalMatrix", node->model.mat3().transposedInverse());
+        shaderProgram.setMat4("modelViewProjection", projection.dot(view.dot(node->model)));
 
         // Draw mesh
         glBindVertexArray(VAO);
@@ -142,7 +143,7 @@ public:
         glActiveTexture(GL_TEXTURE0);
     }
 
-    void print() {
+    void print() const {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << "Mesh: " << name << std::endl;
 
@@ -162,7 +163,7 @@ public:
         }
     }
 
-    std::string getName() {
+    std::string getName() const {
         return name;
     }
 };

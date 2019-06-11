@@ -7,7 +7,7 @@
 
 #include <mesh.h>
 #include <shader_program.h>
-#include "utils.h"
+#include "texture_loader.h"
 
 #include <string>
 #include <fstream>
@@ -23,26 +23,25 @@ class Model
 private:
     std::vector<Node<T>> nodes;
     std::string directory;
-    bool gammaCorrection;
 
 public:
-    Model(std::string const &path, bool gamma = false) : gammaCorrection(gamma)
+    Model(std::string const &path)
     {
         loadModel(path);
     }
 
     // Draw all the model's meshes
-    void draw(const ShaderProgram& shaderProgram)
+    void draw(const ShaderProgram& shaderProgram, const Mat4<T>& projection, const Mat4<T>& view)
     {
         for (uint32 i = 0; i < nodes.size(); i++) {
             for(uint32 j = 0; j < nodes[i].meshes.size(); j++) {
-                nodes[i].meshes[j].draw(shaderProgram);
+                nodes[i].meshes[j].draw(shaderProgram, projection, view);
             }
         }
     }
 
-    void _updateModelMatrices(Node<T>* root, Mat4<T> curr) {
-        Mat4<T> model = curr.dot(root->model);
+    void _updateModelMatrices(Node<T>* root, const Mat4<T>& curr) {
+        const Mat4<T> model = curr.dot(root->model);
         root->model = model;
 
         for (uint32 i = 0; i < root->children.size(); i++) {
@@ -61,8 +60,7 @@ public:
     }
 
     // Loads a support assimp extension from file.
-    void loadModel(std::string const &path)
-    {
+    void loadModel(const std::string &path) {
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,
         aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -234,7 +232,7 @@ public:
             {   // if texture hasn't been loaded already, load it
                 Texture texture;
                 std::string texturePath = this->directory + '/' + str.C_Str();
-                texture.id = textureFromFile(texturePath);
+                texture.id = TextureLoader::textureFromFile(texturePath);
                 texture.type = typeName;
                 texture.path = str.C_Str();
                 textures.push_back(texture);

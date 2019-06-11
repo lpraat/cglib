@@ -10,8 +10,7 @@ out vec2 TexCoord;
 out mat3 TBN;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 modelViewProjection;
 uniform mat3 normalMatrix;
 
 
@@ -28,5 +27,5 @@ void main()
 
     TexCoord = aTexCoord;
 
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_Position = modelViewProjection * vec4(aPos, 1.0);
 }

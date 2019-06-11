@@ -197,10 +197,10 @@ int main()
     collisionDetector.createTerrainGrid();
 
     // Starting position
-    drone.setPosition({301.373, 50.2463, 256.307});
-    camera.setPosition({301.373, 50.2463, 256.307});
+    drone.setPosition({301.373, 90.2463, 256.307});
+    camera.setPosition({301.373, 90.2463, 256.307});
 
-    const float32 bBoxScale = 20.0f;
+    const float32 bBoxScale = 30.0f;
 
     // TODO constrain drone max x and z to something like (700, 700)
     // TODO enable/disable spotlight
@@ -256,24 +256,23 @@ int main()
 
         lookAtView = lookAt.second;
 
-        if (lookAtMode) {
-            droneProgram.setVec3("viewPos", lookAt.first);
-            droneProgram.setMat4("view", lookAtView);
-        } else {
-            droneProgram.setVec3("viewPos", cameraPosition);
-            droneProgram.setMat4("view", cameraView);
-        }
-
         droneModel.getNodes()[0].model = model;
         droneModel.getNodes()[3].model = glp::translate(0.25f, 0.0f, 0.0f).dot(glp::rotateY((float)glfwGetTime() * -1000.0f)).dot(glp::translate(-0.25f, -0.0f, -0.0f));
         droneModel.getNodes()[5].model = glp::translate(-0.25f, 0.0f, 0.0f).dot(glp::rotateY((float)glfwGetTime() * -1000.0f)).dot(glp::translate(+0.25f, -0.0f, -0.0f));
 
         droneModel.updateModelMatrices();
-        droneModel.draw(droneProgram);
+
+        if (lookAtMode) {
+            droneProgram.setVec3("viewPos", lookAt.first);
+            droneModel.draw(droneProgram, projection, lookAtView);
+        } else {
+            droneProgram.setVec3("viewPos", cameraPosition);
+            droneModel.draw(droneProgram, projection, cameraView);
+        }
 
         droneModel.resetModelMatrices();
 
-        // Debug
+    // //    Debug
     //     cubeShader.use();
     //     cubeShader.setMat4("model", glp::translate(drone.getPosition()).dot(glp::scale(bBoxScale)));
     //     if (lookAtMode) {
@@ -283,29 +282,24 @@ int main()
     //         cubeShader.setVec3("viewPos", cameraPosition);
     //         cubeShader.setMat4("view", cameraView);
     //     }
-    //    // collisionDetector.debug();
+    //     collisionDetector.debug();
 
         // Terrain
         terrainProgram.use();
         terrainProgram.setVec3("spotLight.position", spotLight.position);
         terrainProgram.setVec3("spotLight.direction", spotLight.direction);
 
-        if (lookAtMode) {
-            terrainProgram.setVec3("viewPos", lookAt.first);
-            terrainProgram.setMat4("view", lookAtView);
-        } else {
-            terrainProgram.setVec3("viewPos", cameraPosition);
-            terrainProgram.setMat4("view", cameraView);
-        }
-
-        // TODO CARE THEY ARE SET IN MESH NOW
-        // glp::Mat4<float32> terrainModel = glp::translate(0.0f, -0.75f, 0.0f);
-        // terrainProgram.setMat4("model", terrainModel);
-        // terrainProgram.setMat3("normalMatrix", terrainModel.mat3().transposedInverse());
-
         terrainModel.getNodes()[0].model = glp::translate<float32>(0, 0, 1000);
         terrainModel.updateModelMatrices();
-        terrainModel.draw(terrainProgram);
+
+        if (lookAtMode) {
+            terrainProgram.setVec3("viewPos", lookAt.first);
+            terrainModel.draw(terrainProgram, projection, lookAtView);
+        } else {
+            terrainProgram.setVec3("viewPos", cameraPosition);
+            terrainModel.draw(terrainProgram, projection, cameraView);
+        }
+
         terrainModel.resetModelMatrices();
 
         // Skybox
@@ -316,13 +310,13 @@ int main()
             lookAtView.w0 = 0; lookAtView.w1 = 0; lookAtView.w2 = 0; lookAtView.w3 = 1;
             lookAtView.x3 = 0; lookAtView.y3 = 0; lookAtView.z3 = 0;
 
-            skyboxProgram.setMat4("view", lookAtView);
+            skyboxProgram.setMat4("viewProjection", projection.dot(lookAtView));
         } else {
             // Remove translation from the view matrix
             cameraView.w0 = 0; cameraView.w1 = 0; cameraView.w2 = 0; cameraView.w3 = 1;
             cameraView.x3 = 0; cameraView.y3 = 0; cameraView.z3 = 0;
 
-            skyboxProgram.setMat4("view", cameraView);
+            skyboxProgram.setMat4("viewProjection", projection.dot(cameraView));
         }
 
         skybox.draw(skyboxProgram);
