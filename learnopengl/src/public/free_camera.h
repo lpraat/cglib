@@ -20,7 +20,7 @@ template <typename T>
 class FreeCamera {
 private:
     // TODO add this to constructor/config file
-    const float32 positionSpeed = 5.0f;
+    const float32 positionSpeed = 100.0f;
     const float32 orientationSpeed = 50.0f;
     const bool constrained = true;
 
@@ -46,6 +46,14 @@ public:
 
     Vec3<T> getPosition() const {
         return position;
+    }
+
+    void setPosition(Vec3<T> position) {
+        this->position = position;
+    }
+
+    Quat<T> getOrientation() const {
+        return orientation;
     }
 
     Vec3<T> getFrontDirection() const {

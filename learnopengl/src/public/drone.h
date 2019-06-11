@@ -54,10 +54,18 @@ public:
         return std::make_pair(lookAtPosition, lookAt(lookAtPosition, position, up));
     }
 
-    Vec3<T> getPosition() const {
+    void setPosition(Vec3<T> position) {
+        this->position = position;
+    }
+
+    void setOrientation(Quat<T> orientation) {
+        this->orientation = orientation;
+    }
+
+    Vec3<T>& getPosition() {
         return position;
     }
-    Quat<T> getOrientation() const {
+    Quat<T>& getOrientation() {
         return orientation;
     }
 

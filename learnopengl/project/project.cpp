@@ -9,9 +9,7 @@
 #include "quat.h"
 #include "transform.h"
 #include "shader_program.h"
-#include "fps_camera.h"
 #include "free_camera.h"
-#include "perlin.h"
 #include <cmath>
 #include "constants.h"
 #include "model.h"
@@ -21,6 +19,7 @@
 #include "cubemap.h"
 #include "drone.h"
 #include <string>
+#include "collision.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void cameraModeCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -33,7 +32,6 @@ const uint32 HEIGHT = 720;
 
 glp::Drone<float32> drone;
 glp::FreeCamera<float32> camera;
-
 
 bool lookAtMode = false;
 
@@ -90,6 +88,11 @@ int main()
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/drone/fragment.glsl"
     );
 
+    glp::ShaderProgram cubeShader(
+        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/bbox/vertex.glsl",
+        "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/bbox/fragment.glsl"
+    );
+
     std::vector<glp::ShaderProgram*> shadersWithLights;
     shadersWithLights.push_back(&terrainProgram);
     shadersWithLights.push_back(&droneProgram);
@@ -98,10 +101,10 @@ int main()
     glp::Model terrainModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/terrain.obj");
     terrainModel.getNodes()[1].meshes[0].addTexture("texture_diffuse", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/diff2.jpg");
     terrainModel.getNodes()[1].meshes[0].addTexture("texture_normal", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/nrm.png");
-    terrainModel.print();
+    //terrainModel.print();
 
     glp::Model droneModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/drone/drone_obj.obj");
-    droneModel.print();
+    //droneModel.print();
 
     // Skybox
     glp::CubeMap skybox(
@@ -170,8 +173,12 @@ int main()
     skyboxProgram.use();
     skyboxProgram.setMat4("projection", projection);
 
+    cubeShader.use();
+    cubeShader.setMat4("projection", projection);
 
     glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -186,11 +193,28 @@ int main()
     glp::Vec3<float32> cameraPosition;
     glp::Vec3<float32> cameraFrontDirection;
 
+    glp::CollisionDetector<float32> collisionDetector(droneModel, terrainModel);
+    collisionDetector.createTerrainGrid();
+
+    // Starting position
+    drone.setPosition({301.373, 50.2463, 256.307});
+    camera.setPosition({301.373, 50.2463, 256.307});
+
+    const float32 bBoxScale = 20.0f;
+
+    // TODO constrain drone max x and z to something like (700, 700)
+    // TODO enable/disable spotlight
+    // TODO add other objects in the scene(and show light with spotlight)
+    // TODO maybe add some drone physics
+
     while (!glfwWindowShouldClose(window))
     {
         currFrame = glfwGetTime();
         deltaTime = currFrame - lastFrame;
         lastFrame = currFrame;
+
+        glp::Vec3<float32> oldPosition = drone.getPosition();
+        glp::Quat<float32> oldOrientation = drone.getOrientation();
 
         // User Input
         if (lookAtMode) {
@@ -202,6 +226,15 @@ int main()
             cameraView = camera.getView();
         }
 
+        // Render
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if (collisionDetector.hasCollided(drone.getPosition(), bBoxScale)) {
+            drone.setPosition(oldPosition);
+            drone.setOrientation(oldOrientation);
+        }
+
         // Update spotlight position and direction
         spotLight.position = drone.getPosition();
 
@@ -211,10 +244,6 @@ int main()
         // Set new camera position and direction
         cameraPosition = camera.getPosition();
         cameraFrontDirection = camera.getFrontDirection();
-
-        // Render
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Drone
         droneProgram.use();
@@ -244,6 +273,18 @@ int main()
 
         droneModel.resetModelMatrices();
 
+        // Debug
+    //     cubeShader.use();
+    //     cubeShader.setMat4("model", glp::translate(drone.getPosition()).dot(glp::scale(bBoxScale)));
+    //     if (lookAtMode) {
+    //         cubeShader.setVec3("viewPos", lookAt.first);
+    //         cubeShader.setMat4("view", lookAtView);
+    //     } else {
+    //         cubeShader.setVec3("viewPos", cameraPosition);
+    //         cubeShader.setMat4("view", cameraView);
+    //     }
+    //    // collisionDetector.debug();
+
         // Terrain
         terrainProgram.use();
         terrainProgram.setVec3("spotLight.position", spotLight.position);
@@ -262,7 +303,10 @@ int main()
         // terrainProgram.setMat4("model", terrainModel);
         // terrainProgram.setMat3("normalMatrix", terrainModel.mat3().transposedInverse());
 
+        terrainModel.getNodes()[0].model = glp::translate<float32>(0, 0, 1000);
+        terrainModel.updateModelMatrices();
         terrainModel.draw(terrainProgram);
+        terrainModel.resetModelMatrices();
 
         // Skybox
         skyboxProgram.use();

@@ -237,8 +237,6 @@ public:
                 texture.id = textureFromFile(texturePath);
                 texture.type = typeName;
                 texture.path = str.C_Str();
-                std::cout << texture.type << std::endl;
-                std::cout << texture.path << std::endl;
                 textures.push_back(texture);
                 alreadyLoaded.push_back(texture);
             }
