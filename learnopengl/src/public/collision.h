@@ -75,7 +75,6 @@ private:
 
     const uint32 WIDTH = 1001;
     const uint32 HEIGHT = 1001;
-    const uint32 MIN_HEIGHT = 15;
 
     std::vector<std::vector<T>> height;
 
@@ -100,13 +99,6 @@ public:
             }
         }
 
-        for (uint32 i = 0; i < WIDTH; i++) {
-            for (uint32 j = 0; j < HEIGHT; j++) {
-                if (height[i][j] == 0) {
-                    height[i][j] = MIN_HEIGHT;
-                }
-            }
-        }
     }
 
     void setupDebug() {

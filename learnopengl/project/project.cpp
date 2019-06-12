@@ -180,7 +180,6 @@ int main()
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // View matrices
     glp::Mat4<float32> lookAtView = glp::Mat4<float32>::identity();
@@ -200,7 +199,7 @@ int main()
     drone.setPosition({301.373, 90.2463, 256.307});
     camera.setPosition({301.373, 90.2463, 256.307});
 
-    const float32 bBoxScale = 30.0f;
+    const float32 bBoxScale = 40.0f;
 
     // TODO constrain drone max x and z to something like (700, 700)
     // TODO enable/disable spotlight
@@ -338,6 +337,10 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 }
 
 void cameraModeCallBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
+   if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
     if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         lookAtMode = !lookAtMode;
     }
