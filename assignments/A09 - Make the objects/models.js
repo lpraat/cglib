@@ -235,7 +235,7 @@ function buildGeometry() {
 	var vert5 = [];
 	var ind5 = [];
 	var color5 = [1.0, 0.0, 1.0];
-  var slices5 = 16;
+  var slices5 = 6;
   let basePoints5 = [];
   let topPoints5 = [];
 	for(let i = 0; i < slices5; i++) {
@@ -285,7 +285,7 @@ function buildGeometry() {
   // Where theta = 2*Pi*(sectorStep / sectorCount) [from 0 to 360 degree]
   // phi = pi/2 - pi * (stackStep / stackCount) [from -90 to 90]
 
-	var vert6 = [[0.0, 0.0, 0.0]];
+	var vert6 = [];
 	var ind6 = [];
 	var color6 = [0.0, 1.0, 1.0];
   const radius = 1.0;
@@ -315,7 +315,7 @@ function buildGeometry() {
     let k1 = i * (sectorCount + 1); // beginning of current stack
     let k2 = k1 + sectorCount + 1; // beginning of next stack
 
-    for (let j = 0; j <= sectorCount; j++, k1++, k2++) {
+    for (let j = 0; j < sectorCount; j++, k1++, k2++) {
       // 2 triangles per sector excluding first and last stacks
       if (i !== 0) {
         ind6.push(k1);

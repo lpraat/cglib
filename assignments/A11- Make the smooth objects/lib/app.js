@@ -2,8 +2,8 @@ var canvas;
 
 var gl = null,
 	program = null;
-	
-var projectionMatrix, 
+
+var projectionMatrix,
 	perspProjectionMatrix,
 	viewMatrix,
 	worldMatrix;
@@ -19,7 +19,7 @@ var angle = 0.0;
 var lookRadius = 10.0;
 
 
-		
+
 // Vertex shader
 var vs = `#version 300 es
 #define POSITION_LOCATION 0
@@ -36,7 +36,7 @@ out vec3 fs_norm;
 void main() {
 	fs_pos = in_pos;
 	fs_norm = in_norm;
-	
+
 	gl_Position = pMatrix * vec4(in_pos, 1);
 }`;
 
@@ -56,7 +56,7 @@ out vec4 color;
 
 void main() {
 	vec3 n_norm = normalize(fs_norm);
-	
+
 	float dimFact = lightDir1.w * clamp(dot(n_norm, lightDir1.xyz),0.0,1.0);
 	dimFact += lightDir2.w * clamp(dot(n_norm, lightDir2.xyz),0.0,1.0);
 	dimFact += lightDir3.w * clamp(dot(n_norm, lightDir3.xyz),0.0,1.0);
@@ -84,7 +84,7 @@ function doMouseMove(event) {
 		var dy = lastMouseY - event.pageY;
 		lastMouseX = event.pageX;
 		lastMouseY = event.pageY;
-		
+
 		if((dx != 0) || (dy != 0)) {
 			angle = angle + 0.5 * dx;
 			elevation = elevation + 0.5 * dy;
@@ -111,7 +111,7 @@ var wireframeMode = false;
 var keyFunction =function(e) {
 	if (e.keyCode == 32) {	// Space
 		wireframeMode = !wireframeMode;
-	}	
+	}
 }
 window.addEventListener("keyup", keyFunction, false);
 
@@ -125,12 +125,14 @@ var indices = [];
 var colors = [];
 
 function addMesh(i_vertices, i_norm, i_indices, i_color) {
-	var i;
+  var i;
+  console.log(i_norm.length);
+  console.log(i_norm);
 //console.log(i_vertices);
 	for(i = 0; i < i_vertices.length; i++) {
 		vertices[(i + startVertex[totMesh]) * 3 + 0 ] = i_vertices[i][0];
 		vertices[(i + startVertex[totMesh]) * 3 + 1 ] = i_vertices[i][1];
-		vertices[(i + startVertex[totMesh]) * 3 + 2 ] = i_vertices[i][2];
+    vertices[(i + startVertex[totMesh]) * 3 + 2 ] = i_vertices[i][2];
 		normals[ (i + startVertex[totMesh]) * 3 + 0 ] = i_norm[i][0];
 		normals[ (i + startVertex[totMesh]) * 3 + 1 ] = i_norm[i][1];
 		normals[ (i + startVertex[totMesh]) * 3 + 2 ] = i_norm[i][2];
@@ -140,10 +142,10 @@ function addMesh(i_vertices, i_norm, i_indices, i_color) {
 	}
 	colors[totMesh] = i_color;
 
-	totMesh ++;	
-	
+	totMesh ++;
+
 	startVertex[totMesh] = startVertex[totMesh-1] + i_vertices.length;
-	startIndex[totMesh] = startIndex[totMesh-1] + i_indices.length;	
+	startIndex[totMesh] = startIndex[totMesh-1] + i_indices.length;
 }
 
 
@@ -165,7 +167,7 @@ function main(){
 	} catch(e){
 		console.log(e);
 	}
-	
+
 	if(gl){
 		// Compile and link shaders
 		program = gl.createProgram();
@@ -177,14 +179,14 @@ function main(){
 		}
 		var v2 = gl.createShader(gl.FRAGMENT_SHADER);
 		gl.shaderSource(v2, fs)
-		gl.compileShader(v2);		
+		gl.compileShader(v2);
 		if (!gl.getShaderParameter(v2, gl.COMPILE_STATUS)) {
 			alert("ERROR IN FS SHADER : " + gl.getShaderInfoLog(v2));
-		}			
+		}
 		gl.attachShader(program, v1);
 		gl.attachShader(program, v2);
-		gl.linkProgram(program);				
-		
+		gl.linkProgram(program);
+
 		gl.useProgram(program);
 
 		// Creates  geometry
@@ -213,28 +215,28 @@ function main(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 //console.log(indices.byteLength);
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices.byteLength, gl.STATIC_DRAW);
-		gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, indices);	
-//		
+		gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, indices);
+//
 //		mesh = new OBJ.Mesh(objStr);
 //		OBJ.initMeshBuffers(gl, mesh);
-		
+
 		// links mesh attributes to shader attributes
 		program.vertexPositionAttribute = gl.getAttribLocation(program, "in_pos");
 		gl.enableVertexAttribArray(program.vertexPositionAttribute);
 
 		program.vertexNormalAttribute = gl.getAttribLocation(program, "in_norm");
 		gl.enableVertexAttribArray(program.vertexNormalAttribute);
-		 
+
 		program.WVPmatrixUniform = gl.getUniformLocation(program, "pMatrix");
 		program.lightDir1 = gl.getUniformLocation(program, "lightDir1");
 		program.lightDir2 = gl.getUniformLocation(program, "lightDir2");
 		program.lightDir3 = gl.getUniformLocation(program, "lightDir3");
 		program.matcol = gl.getUniformLocation(program, "matcol");
-		
+
 		// prepares the world, view and projection matrices.
 		var w=canvas.clientWidth;
 		var h=canvas.clientHeight;
-		
+
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.viewport(0.0, 0.0, w, h);
 
@@ -245,8 +247,8 @@ function main(){
 		gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 		gl.vertexAttribPointer(program.vertexNormalAttribute, 3, gl.FLOAT, false, 0, 0);
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);		
-		
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
 	 // turn on depth testing and back-face culling
 	    gl.enable(gl.DEPTH_TEST);
 		gl.enable(gl.CULL_FACE);
@@ -295,5 +297,5 @@ function drawScene() {
 		gl.drawElements(gl.TRIANGLES, startIndex[slider+1] - startIndex[slider],
 					    gl.UNSIGNED_SHORT, startIndex[slider] * 2);
 	}
-	window.requestAnimationFrame(drawScene);		
+	window.requestAnimationFrame(drawScene);
 }
