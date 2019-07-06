@@ -15,8 +15,26 @@ function subtract(v1, v2) {
   return [v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]];
 }
 
-function computeNormals(vertices) {
-  let normals = [];
+function areEqual(f1, f2) {
+  return Math.abs(f1 - f2) < 1e-7
+}
+
+function areVerticesEqual(v1, v2) {
+  return areEqual(v1[0], v2[0]) && areEqual(v1[1], v2[1]) && areEqual(v1[2], v2[2]);
+}
+
+function computeNormals(vertices, basic) {
+
+  let normals;
+
+  if (basic) {
+    normals = [];
+  } else {
+    normals = [];
+    for (let i = 0; i < vertices.length; i++) {
+      normals.push([0.0, 0.0, 0.0]);
+    }
+  }
 
   for (let i = 0; i < vertices.length; i+=3) {
     let v1 = vertices[i];
@@ -24,9 +42,28 @@ function computeNormals(vertices) {
     let v3 = vertices[i+2];
 
     let crossP = cross(subtract(v1, v2), subtract(v2, v3));
-    normals.push(crossP);
-    normals.push(crossP);
-    normals.push(crossP);
+
+    if (basic) {
+      normals.push(crossP);
+      normals.push(crossP);
+      normals.push(crossP);
+    } else {
+      for (let j = 0; j < vertices.length; j++) {
+        const equal = areVerticesEqual(v1, vertices[j]) || areVerticesEqual(v2, vertices[j]) || areVerticesEqual(v3, vertices[j]);
+        if (equal) {
+          normals[j][0] += crossP[0];
+          normals[j][1] += crossP[1];
+          normals[j][2] += crossP[2];
+        }
+      }
+    }
+
+  }
+
+  if (!basic) {
+    for (let i = 0; i < normals.length; i++) {
+      normals[i] = normalized(normals[i]);
+    }
   }
 
   return normals;
@@ -101,7 +138,7 @@ function buildGeometry() {
   }
 
   var color1 = [0.0, 0.0, 1.0];
-  let norm1 = computeNormals(vert1);
+  let norm1 = computeNormals(vert1, true);
 	addMesh(vert1, norm1, ind1, color1);
 
   // Draws a Cylinder
@@ -146,7 +183,7 @@ function buildGeometry() {
     ind5.push(i);
   }
 
-  let norm5 = computeNormals(vert5);
+  let norm5 = computeNormals(vert5, true);
 
 	addMesh(vert5, norm5, ind5, color5);
 
@@ -180,7 +217,7 @@ function buildGeometry() {
   for (let i = 0; i < vert4.length; i++) {
     ind4.push(i);
   }
-  let norm4 = computeNormals(vert4);
+  let norm4 = computeNormals(vert4, true);
   addMesh(vert4, norm4, ind4, color4);
 
 
