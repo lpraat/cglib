@@ -101,11 +101,7 @@ function buildGeometry() {
   }
 
   var color1 = [0.0, 0.0, 1.0];
-  console.log(vert1);
   let norm1 = computeNormals(vert1);
-  console.log(norm1.length);
-
-  console.log(norm1);
 	addMesh(vert1, norm1, ind1, color1);
 
   // Draws a Cylinder
@@ -153,7 +149,6 @@ function buildGeometry() {
   let norm5 = computeNormals(vert5);
 
 	addMesh(vert5, norm5, ind5, color5);
-
 
   // Draws a Cone
   var vert4 = [];
@@ -247,10 +242,6 @@ function buildGeometry() {
     }
   }
 
-  console.log("Here");
-  console.log(norm6.length);
-  console.log(vert6.length);
-  console.log(ind6.length);
 	addMesh(vert6, norm6, ind6, color6);
 }
 
