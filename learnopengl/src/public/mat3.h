@@ -47,13 +47,13 @@ struct Mat3 {
     }
 
     Mat3<T> transposedInverse() {
-        T determinant = +x0*(y1*z2-y2*z1) -y0*(x1*z2-z1*x2) + z0*(x1*y2-y1*x2);
+        T determinant = x0*(y1*z2 - y2*z1) - y0*(x1*z2 - z1*x2) + z0*(x1*y2 - y1*x2);
         T invdet = 1/determinant;
 
         return {
-            {(y1*z2-y2*z1)*invdet, -(x1*z2-z1*x2)*invdet, (x1*y2-x2*y1)*invdet},
-            {-(y0*z2-z0*y2)*invdet, (x0*z2-z0*x2)*invdet, -(x0*y2-x2*y0)*invdet},
-            {(y0*z1-z0*y1)*invdet, -(x0*z1-x1*z0)*invdet,  (x0*y1-x1*y0)*invdet}
+            {(y1*z2 - y2*z1)*invdet, -(x1*z2 - z1*x2)*invdet, (x1*y2 - x2*y1)*invdet},
+            {-(y0*z2 - z0*y2)*invdet, (x0*z2 - z0*x2)*invdet, -(x0*y2 - x2*y0)*invdet},
+            {(y0*z1 - z0*y1)*invdet, -(x0*z1 - x1*z0)*invdet,  (x0*y1 - x1*y0)*invdet}
         };
     }
 

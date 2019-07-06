@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core_types.h"
+#include "vec3.h"
+#include "vec2.h"
 
 namespace glp {
 
@@ -10,7 +12,6 @@ struct Vertex {
     Vec3<T> Normal;
     Vec2<T> TexCoords;
     Vec3<T> Tangent;
-    Vec3<T> Bitangent;
 };
 
 }; // namespace glp

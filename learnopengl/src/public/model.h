@@ -23,7 +23,6 @@ class Model
 private:
     std::vector<Node<T>> nodes;
     std::string directory;
-
 public:
     Model(std::string const &path)
     {
@@ -160,12 +159,6 @@ public:
             vector.y = mesh->mTangents[i].y;
             vector.z = mesh->mTangents[i].z;
             vertex.Tangent = vector;
-
-            // bitangents
-            vector.x = mesh->mBitangents[i].x;
-            vector.y = mesh->mBitangents[i].y;
-            vector.z = mesh->mBitangents[i].z;
-            vertex.Bitangent = vector;
 
 
             vertices.push_back(vertex);

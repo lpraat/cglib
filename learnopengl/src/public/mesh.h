@@ -33,7 +33,6 @@ public:
     std::string name;
 
 public:
-
     Mesh(Node<T>* node, std::string name, std::vector<Vertex<T>> vertices, std::vector<uint32> indices, std::vector<Texture> textures)
     :
     node(node), name(name), vertices{vertices}, indices{indices}, textures{textures}
@@ -79,10 +78,6 @@ public:
         // Tangents
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex<T>), (void*)offsetof(Vertex<T>, Tangent));
-
-        // Bitangents
-        glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex<T>), (void*)offsetof(Vertex<T>, Bitangent));
 
         glBindVertexArray(0);
     }
