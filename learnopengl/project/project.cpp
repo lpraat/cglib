@@ -10,15 +10,11 @@
 #include "transform.h"
 #include "shader_program.h"
 #include "free_camera.h"
-#include <cmath>
-#include "constants.h"
 #include "model.h"
 #include "lights/directional.h"
 #include "lights/spot.h"
-#include "lights/point.h"
 #include "cubemap.h"
 #include "drone.h"
-#include <string>
 #include "collision.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -48,7 +44,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create a window object that holds all the windowing data
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "ComputerGraphicsProject", nullptr, nullptr);
 
     if (window == nullptr)
     {
@@ -74,38 +70,46 @@ int main()
     glfwSetKeyCallback(window, cameraModeCallBack);
 
     // Shaders
+    // Skybox
     glp::ShaderProgram skyboxProgram(
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/skybox/vertex.glsl",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/skybox/fragment.glsl"
     );
 
+    // Terrain
     glp::ShaderProgram terrainProgram(
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/terrain/vertex.glsl",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/terrain/fragment.glsl");
 
+    // Drone
     glp::ShaderProgram droneProgram(
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/drone/vertex.glsl",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/drone/fragment.glsl"
     );
 
+    // Bounding box(for debugging)
     glp::ShaderProgram cubeShader(
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/bbox/vertex.glsl",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/shaders/bbox/fragment.glsl"
     );
 
+    // All the shaders where lights are applied
     std::vector<glp::ShaderProgram*> shadersWithLights;
     shadersWithLights.push_back(&terrainProgram);
     shadersWithLights.push_back(&droneProgram);
 
     // Models
+    // Terrain
     glp::Model terrainModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/terrain.obj");
     terrainModel.getNodes()[1].meshes[0].addTexture("texture_diffuse", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/diff2.jpg");
     terrainModel.getNodes()[1].meshes[0].addTexture("texture_normal", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/nrm.png");
     //terrainModel.print();
 
+    // Drone
     glp::Model droneModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/drone/drone_obj.obj");
     //droneModel.print();
 
+    // Cubemap
     // Skybox
     glp::CubeMap skybox(
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/skybox/right.jpg",
@@ -114,37 +118,38 @@ int main()
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/skybox/bottom.jpg",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/skybox/front.jpg",
         "/Users/lpraat/develop/computer_graphics/learnopengl/project/skybox/back.jpg"
-
     );
 
     // Lights
+    // Directional light
     glp::DirectionalLight<float32> directionalLight {
-        {0.05f, 0.05f, 0.05f},
-        {0.4f, 0.4f, 0.4f},
-        {0.5f, 0.5f, 0.5f},
-        {0.5f, -0.5f, 0.8f}
+        {0.05f, 0.05f, 0.05f}, // ambient
+        {0.4f, 0.4f, 0.4f},    // diffuse
+        {0.5f, 0.5f, 0.5f},    // specular
+        {0.5f, -0.5f, 0.8f}    // light direction specified as FROM the source
     };
 
+    // Spotlight
     glp::SpotLight<float32> spotLight {
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 1.0f, 1.0f},
-        {1.0f, 1.0f, 1.0f},
-        1.0f,
-        0.00002f,
-        0.00002f,
-        std::cos(12.5f * glp::toRadians()),
-        std::cos(17.5f * glp::toRadians())
+        {0.0f, 0.0f, 0.0f}, // position
+        {0.0f, 0.0f, 0.0f}, // direction
+        {0.0f, 0.0f, 0.0f}, // ambient
+        {1.0f, 1.0f, 1.0f}, // diffuse
+        {1.0f, 1.0f, 1.0f}, // specular
+        1.0f, // constant decay term
+        0.00002f, // linear decay term
+        0.00002f, // quadratic decay term
+        std::cos(12.5f * glp::toRadians()), // cone in
+        std::cos(17.5f * glp::toRadians())  // cone out
     };
 
     // Set lights to shaders
     for (uint32 i = 0; i < shadersWithLights.size(); i++) {
-        // Directional light
         glp::ShaderProgram* s = shadersWithLights[i];
         s->use();
         s->setFloat("shininess", 32.0f);
 
+        // Directional light
         s->setVec3("dirLight.direction", directionalLight.dir);
         s->setVec3("dirLight.ambient", directionalLight.ambient);
         s->setVec3("dirLight.diffuse", directionalLight.diffuse);
@@ -161,25 +166,22 @@ int main()
         s->setFloat("spotLight.outerCutOff", spotLight.outerCutOff);
     }
 
-    // Set projection matrix
-    glp::Mat4 projection{glp::perspectiveProjection(45.0f, 0.1f, 1000.0f, static_cast<float32>(WIDTH) / HEIGHT)};
+    // Collision detector for the terrain
+    glp::CollisionDetector<float32> collisionDetector(droneModel, terrainModel);
+    collisionDetector.createTerrainGrid();
 
-    terrainProgram.use();
-    terrainProgram.setMat4("projection", projection);
-
-    droneProgram.use();
-    droneProgram.setMat4("projection", projection);
-
-    skyboxProgram.use();
-    skyboxProgram.setMat4("projection", projection);
-
-    cubeShader.use();
-    cubeShader.setMat4("projection", projection);
-
+    // Enable z-buffer
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Enable blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Enable face culling
     glEnable(GL_CULL_FACE);
+
+    // Projection matrix
+    glp::Mat4 projection{glp::perspectiveProjection(45.0f, 0.1f, 1000.0f, static_cast<float32>(WIDTH) / HEIGHT)};
 
     // View matrices
     glp::Mat4<float32> lookAtView = glp::Mat4<float32>::identity();
@@ -191,9 +193,6 @@ int main()
 
     glp::Vec3<float32> cameraPosition;
     glp::Vec3<float32> cameraFrontDirection;
-
-    glp::CollisionDetector<float32> collisionDetector(droneModel, terrainModel);
-    collisionDetector.createTerrainGrid();
 
     // Starting position
     drone.setPosition({301.373, 90.2463, 256.307});
@@ -236,7 +235,6 @@ int main()
 
         // Update spotlight position and direction
         spotLight.position = drone.getPosition();
-
         // As light is specified from the hit point  we use -y, +z
         spotLight.direction = drone.getLightDirection();
 
@@ -252,7 +250,6 @@ int main()
         glp::Mat4<float32> model = drone.getModel().dot(glp::rotateY(180.0f)).dot(glp::scale(10.0f));
         auto lookAt = drone.getLookAt();
         auto lookAtPosition = lookAt.first;
-
         lookAtView = lookAt.second;
 
         droneModel.getNodes()[0].model = model;
@@ -262,7 +259,7 @@ int main()
         droneModel.updateModelMatrices();
 
         if (lookAtMode) {
-            droneProgram.setVec3("viewPos", lookAt.first);
+            droneProgram.setVec3("viewPos", lookAtPosition);
             droneModel.draw(droneProgram, projection, lookAtView);
         } else {
             droneProgram.setVec3("viewPos", cameraPosition);
@@ -271,17 +268,19 @@ int main()
 
         droneModel.resetModelMatrices();
 
-    // //    Debug
-    //     cubeShader.use();
-    //     cubeShader.setMat4("model", glp::translate(drone.getPosition()).dot(glp::scale(bBoxScale)));
-    //     if (lookAtMode) {
-    //         cubeShader.setVec3("viewPos", lookAt.first);
-    //         cubeShader.setMat4("view", lookAtView);
-    //     } else {
-    //         cubeShader.setVec3("viewPos", cameraPosition);
-    //         cubeShader.setMat4("view", cameraView);
-    //     }
-    //     collisionDetector.debug();
+        // // Debug
+        // cubeShader.use();
+        // cubeShader.setMat4("model", glp::translate(drone.getPosition()).dot(glp::scale(bBoxScale)));
+        // if (lookAtMode) {
+        //     cubeShader.setVec3("viewPos", lookAt.first);
+        //     cubeShader.setMat4("projection", projection);
+        //     cubeShader.setMat4("view", lookAtView);
+        // } else {
+        //     cubeShader.setVec3("viewPos", cameraPosition);
+        //     cubeShader.setMat4("projection", projection);
+        //     cubeShader.setMat4("view", cameraView);
+        // }
+        // collisionDetector.debug();
 
         // Terrain
         terrainProgram.use();
@@ -292,7 +291,7 @@ int main()
         terrainModel.updateModelMatrices();
 
         if (lookAtMode) {
-            terrainProgram.setVec3("viewPos", lookAt.first);
+            terrainProgram.setVec3("viewPos", lookAtPosition);
             terrainModel.draw(terrainProgram, projection, lookAtView);
         } else {
             terrainProgram.setVec3("viewPos", cameraPosition);
@@ -331,24 +330,18 @@ int main()
     return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
 void cameraModeCallBack(GLFWwindow* window, int key, int scancode, int action, int mods) {
-   if (key == GLFW_KEY_H && action == GLFW_PRESS) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
 
     if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         lookAtMode = !lookAtMode;
     }
 }
 
-void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 deltaTime)
-{
-    // check if the user has pressed the escape key(if it's not, glfwGetKey returns GLFW_RELEASE)
+void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
@@ -417,7 +410,6 @@ void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 
 
 void processInput(GLFWwindow *window, glp::Drone<float32> &drone, float32 deltaTime)
 {
-    // check if the user has pressed the escape key(if it's not, glfwGetKey returns GLFW_RELEASE)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);

@@ -109,18 +109,19 @@ public:
         {
             glActiveTexture(GL_TEXTURE0 + i);
             std::string number;
-            std::string name = textures[i].type;
-            if (name == "texture_diffuse")
-				number = std::to_string(diffuseNr++);
-			else if (name == "texture_specular")
-				number = std::to_string(specularNr++);
-            else if (name == "texture_normal")
-				number = std::to_string(normalNr++);
-            else if (name == "texture_height")
-			    number = std::to_string(heightNr++);
+            std::string textureType = textures[i].type;
+            if (textureType == "texture_diffuse") {
+                number = std::to_string(diffuseNr++);
+            } else if (textureType == "texture_specular") {
+                number = std::to_string(specularNr++);
+            } else if (textureType == "texture_normal") {
+                number = std::to_string(normalNr++);
+            } else if (textureType == "texture_height") {
+                number = std::to_string(heightNr++);
+            }
 
             // Set 2d sampler to corresponding texture unit
-            shaderProgram.setInt((name + number).c_str(), i);
+            shaderProgram.setInt(textureType + number, i);
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
         }
 
