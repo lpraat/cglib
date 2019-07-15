@@ -48,13 +48,14 @@ function move() {
         0, 0, 0, 1
     ];
 
-    // The ship has been doubled in size, rotated    std::vector<glp::Mat4<float32>> matrices {
+    // The ship has been doubled in size, rotated 45 degrees around the x axis, 30 degrees around the y axis, and moved to (1,1,-2). Return the ship in its original position
+    // std::vector<glp::Mat4<float32>> matrices {
     // glp::rotateY(-30.0f),
     // glp::rotateX(-45.0f),
     // glp::scale(0.5f)
     // };
 
-    // glp::compose(matrices).print(); 45 degrees around the x axis, 30 degrees around the y axis, and moved to (1,1,-2). Return the ship in its original position
+    // glp::compose(matrices).print();
     var I1 = [
         0.433013, 0, -0.25, -0.933013,
         0.176777, 0.353553, 0.306186, 0.0820423,

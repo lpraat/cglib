@@ -7,6 +7,11 @@ function view(cx, cy, cz, alpha, beta, rho) {
   let rx = utils.MakeRotateXMatrix(-beta);
   let rz = utils.MakeRotateZMatrix(-rho);
 
+
+
+
+  // out = (translate * roty * rotx * rotz)^-1 = rotz^-1 * rotx^-1 * rot^-1 * translate^-1
+  // out = rz * rx * ry * tMatrix
   var out = rz;
   out = utils.multiplyMatrices(out, rx);
   out = utils.multiplyMatrices(out, ry);
