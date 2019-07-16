@@ -75,14 +75,14 @@ void main()
 
     vec3 viewDir = normalize(viewPos - FragPos);
 
-    // phase 1: Directional lighting
+    // Directional lighting
     vec3 result = computeDirLight(dirLight, normal, viewDir);
 
-    // // phase 2: Point lights
+    // Point lights
     // for(int i = 0; i < NR_POINT_LIGHTS; i++)
     //     result += computePointLight(pointLights[i], normal, FragPos, viewDir);
 
-    // phase 3: Spot light
+    // Spot light
     result += computeSpotLight(spotLight, normal, FragPos, viewDir);
 
     FragColor = vec4(result, 1.0);
@@ -92,12 +92,14 @@ vec3 computeDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
     // why -? assuming direction is specified as pointing FROM the light source
     vec3 lightDir = normalize(-light.direction);
-    // diffuse shading
+
+    // diffuse
     float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
+
+    // specular
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    // combine results
+
     vec3 ambient  = light.ambient  * vec3(texture(texture_diffuse1, TexCoord));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(texture_diffuse1, TexCoord));
     vec3 specular = light.specular * spec * vec3(texture(texture_specular1, TexCoord));

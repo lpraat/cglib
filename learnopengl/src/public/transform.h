@@ -11,9 +11,8 @@
 namespace glp {
 
 // Forward
-template <typename T, typename S = uint8>
+template <typename T, typename S>
 Mat4<T> compose(const std::vector<Mat4<T>>& matrices);
-
 
 template <typename T = float32>
 Mat4<T> translate(T dx, T dy, T dz) {
@@ -197,7 +196,7 @@ Mat4<T> isometricProjection(T hw, T n, T f, T a) {
         rotateX<T>(35.26),
         rotateY<T>(45)
     };
-    return compose<T>(toCompose);
+    return compose<T, uint8>(toCompose);
 }
 
 template <typename T = float32>
@@ -207,7 +206,7 @@ Mat4<T> dimetricProjection(T alpha, T hw, T n, T f, T a) {
         rotateX<T>(alpha),
         rotateY<T>(45)
     };
-    return compose<T>(toCompose);
+    return compose<T, uint8>(toCompose);
 }
 
 template <typename T = float32>
@@ -217,7 +216,7 @@ Mat4<T> trimetricProjection(T alpha, T beta, T hw, T n, T f, T a) {
         rotateX<T>(alpha),
         rotateY<T>(beta)
     };
-    return compose<T>(toCompose);
+    return compose<T, uint8>(toCompose);
 }
 
 template <typename T = float32>
@@ -261,7 +260,7 @@ Mat4<T> lookAt(const Vec3<T>& position, const Vec3<T>& target, const Vec3<T>& up
 }
 
 template <typename T = float32, typename S = uint8>
-Mat4<T> compose(std::vector<Mat4<T>>& matrices) {
+Mat4<T> compose(const std::vector<Mat4<T>>& matrices) {
     Mat4<T> result {matrices[0].dot(matrices[1])};
 
     for (S i = 2; i < matrices.size(); i++) {

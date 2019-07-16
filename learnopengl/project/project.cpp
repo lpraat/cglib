@@ -23,6 +23,13 @@ void cameraModeCallBack(GLFWwindow* window, int key, int scancode, int action, i
 void processInput(GLFWwindow *window, glp::FreeCamera<float32> &camera, float32 deltaTime);
 void processInput(GLFWwindow *window, glp::Drone<float32> &camera, float32 deltaTime);
 
+template <typename T = float32>
+bool isInLand(const glp::Vec3<T>& dronePosition) {
+    return dronePosition.x >= 250 && dronePosition.x <= 850 &&
+           dronePosition.y <= 400 &&
+           dronePosition.z >= 250 && dronePosition.z <= 850;
+}
+
 const uint32 WIDTH = 1280;
 const uint32 HEIGHT = 720;
 
@@ -100,13 +107,13 @@ int main()
 
     // Models
     // Terrain
-    glp::Model terrainModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/terrain.obj");
-    terrainModel.getNodes()[1].meshes[0].addTexture("texture_diffuse", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/diff2.jpg");
-    terrainModel.getNodes()[1].meshes[0].addTexture("texture_normal", "/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/terrain/nrm.png");
+    glp::Model terrainModel("/Users/lpraat/develop/computer_graphics/learnopengl/project/models/terrain/terrain.obj");
+    terrainModel.getNodes()[1].meshes[0].addTexture("texture_diffuse", "/Users/lpraat/develop/computer_graphics/learnopengl/project/models/terrain/diff2.jpg");
+    terrainModel.getNodes()[1].meshes[0].addTexture("texture_normal", "/Users/lpraat/develop/computer_graphics/learnopengl/project/models/terrain/nrm.png");
     //terrainModel.print();
 
     // Drone
-    glp::Model droneModel("/Users/lpraat/develop/computer_graphics/learnopengl/chapters/models/drone/drone_obj.obj");
+    glp::Model droneModel("/Users/lpraat/develop/computer_graphics/learnopengl/project/models/drone/drone_obj.obj");
     //droneModel.print();
 
     // Cubemap
@@ -138,7 +145,7 @@ int main()
         {1.0f, 1.0f, 1.0f}, // specular
         1.0f, // constant decay term
         0.00002f, // linear decay term
-        0.00002f, // quadratic decay term
+        0.0005f, // quadratic decay term
         std::cos(12.5f * glp::toRadians()), // cone in
         std::cos(17.5f * glp::toRadians())  // cone out
     };
@@ -195,15 +202,10 @@ int main()
     glp::Vec3<float32> cameraFrontDirection;
 
     // Starting position
-    drone.setPosition({301.373, 90.2463, 256.307});
-    camera.setPosition({301.373, 90.2463, 256.307});
+    drone.setPosition({500, 90, 500});
+    camera.setPosition({500, 90, 500});
 
     const float32 bBoxScale = 40.0f;
-
-    // TODO constrain drone max x and z to something like (700, 700)
-    // TODO enable/disable spotlight
-    // TODO add other objects in the scene(and show light with spotlight)
-    // TODO maybe add some drone physics
 
     while (!glfwWindowShouldClose(window))
     {
@@ -228,19 +230,19 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (collisionDetector.hasCollided(drone.getPosition(), bBoxScale)) {
+        if (collisionDetector.hasCollided(drone.getPosition(), bBoxScale) || !isInLand(drone.getPosition())) {
             drone.setPosition(oldPosition);
             drone.setOrientation(oldOrientation);
         }
 
         // Update spotlight position and direction
         spotLight.position = drone.getPosition();
+
         // As light is specified from the hit point  we use -y, +z
         spotLight.direction = drone.getLightDirection();
 
         // Set new camera position and direction
         cameraPosition = camera.getPosition();
-        cameraFrontDirection = camera.getFrontDirection();
 
         // Drone
         droneProgram.use();
@@ -287,7 +289,7 @@ int main()
         terrainProgram.setVec3("spotLight.position", spotLight.position);
         terrainProgram.setVec3("spotLight.direction", spotLight.direction);
 
-        terrainModel.getNodes()[0].model = glp::translate<float32>(0, 0, 1000);
+        terrainModel.getNodes()[0].model = glp::translate<float32>(0, 0, 1000.0f);
         terrainModel.updateModelMatrices();
 
         if (lookAtMode) {
