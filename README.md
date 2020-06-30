@@ -1,4 +1,4 @@
-# Computer graphics
+# cglib
 Under the src folder you can find an header only library written for the Computer graphics course @ Politecnico di Milano.
 
 You can find:
